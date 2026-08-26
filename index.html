@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mô Phỏng Quỹ Đạo Sao Hỏa & Trái Đất - Trực Đối & Nghịch Hành</title>
+  <title>Mô Phỏng Thiên Thể: Quỹ Đạo Sao Hỏa & Trái Đất</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,9 +11,9 @@
       padding: 0;
     }
     body {
-      background-color: #05070f;
-      color: #f1f5f9;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #030712;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -21,110 +21,114 @@
     }
     header {
       padding: 12px 24px;
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
       z-index: 10;
     }
-    .title-group {
+    .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
     h1 {
       font-size: 1.15rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #ff758f, #ffb703, #38bdf8);
+      background: linear-gradient(135deg, #f43f5e, #fb923c, #38bdf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .badge {
-      background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      padding: 3px 10px;
-      border-radius: 20px;
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      padding: 2px 10px;
+      border-radius: 999px;
       font-size: 0.75rem;
       font-weight: 600;
     }
-    #main-container {
+    #viewport {
       flex: 1;
       position: relative;
       width: 100%;
       height: 100%;
     }
-    canvas#simCanvas {
+    canvas#mainCanvas {
       display: block;
       width: 100%;
       height: 100%;
     }
 
-    /* Control Panel */
+    /* Bảng điều khiển kính mờ */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
     .control-panel {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 14px;
+      top: 18px;
+      right: 18px;
       padding: 18px;
       width: 310px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
       font-size: 0.85rem;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      z-index: 5;
     }
-    .panel-title {
+    .panel-heading {
       font-weight: 600;
       color: #94a3b8;
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       padding-bottom: 6px;
     }
-    .control-group label {
+    .control-item label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       color: #cbd5e1;
     }
-    .slider-row {
+    .slider-container {
       display: flex;
       align-items: center;
       gap: 10px;
     }
     input[type="range"] {
       flex: 1;
-      accent-color: #ff4d6d;
+      accent-color: #f43f5e;
       cursor: pointer;
     }
-    .checkbox-row {
+    .toggle-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
       color: #e2e8f0;
       user-select: none;
     }
-    .checkbox-row input {
-      accent-color: #ff4d6d;
+    .toggle-item input {
+      accent-color: #f43f5e;
       width: 16px;
       height: 16px;
       cursor: pointer;
     }
-    .btn-row {
+    .btn-group {
       display: flex;
       gap: 8px;
       margin-top: 4px;
     }
     button {
       flex: 1;
-      padding: 9px 12px;
+      padding: 8px 12px;
       border: none;
       border-radius: 8px;
       background: #334155;
@@ -132,32 +136,27 @@
       cursor: pointer;
       font-weight: 600;
       font-size: 0.8rem;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
     button:hover {
       background: #475569;
-      transform: translateY(-1px);
     }
-    button.primary {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
-    }
-    button.primary:hover {
-      background: linear-gradient(135deg, #dc2626, #b91c1c);
+    button.btn-primary {
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
     }
 
-    /* Status indicators */
-    .telemetry {
-      background: rgba(0, 0, 0, 0.3);
+    /* Thông số thời gian thực */
+    .metrics {
+      background: rgba(2, 6, 23, 0.6);
       border-radius: 8px;
-      padding: 10px 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-family: monospace;
       font-size: 0.8rem;
       line-height: 1.6;
-      color: #38bdf8;
     }
-    .status-badge {
+    .status-tag {
       display: inline-block;
       padding: 2px 8px;
       border-radius: 6px;
@@ -165,31 +164,26 @@
       font-size: 0.75rem;
       margin-top: 4px;
     }
-    .status-normal { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-    .status-opp { background: rgba(251, 191, 36, 0.25); color: #fbbf24; border: 1px solid #fbbf24; }
-    .status-retro { background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #f87171; }
+    .tag-pro { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+    .tag-opp { background: rgba(251, 191, 36, 0.25); color: #fbbf24; border: 1px solid #fbbf24; }
+    .tag-retro { background: rgba(244, 63, 94, 0.25); color: #fb7185; border: 1px solid #fb7185; }
 
-    /* Mini Geocentric Sky View Box */
-    .sky-box {
+    /* Cửa sổ Sky View biểu kiến */
+    .sky-widget {
       position: absolute;
       bottom: 20px;
       left: 20px;
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 14px;
       padding: 14px;
-      width: 280px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      width: 290px;
+      z-index: 5;
     }
-    .sky-box-header {
+    .sky-widget-header {
       font-size: 0.8rem;
       font-weight: 600;
       color: #cbd5e1;
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
     }
     canvas#skyCanvas {
       width: 100%;
@@ -204,120 +198,126 @@
 <body>
 
   <header>
-    <div class="title-group">
-      <h1>Hệ Tương Quan Quỹ Đạo Trái Đất - Sao Hỏa</h1>
-      <span class="badge">Kepler & Copemicus</span>
+    <div class="brand">
+      <h1>Hệ Quỹ Đạo Nhật Tâm: Trái Đất & Sao Hỏa</h1>
+      <span class="badge">Kepler & Copernicus</span>
     </div>
-    <div style="font-size: 0.85rem; color: #94a3b8;">Hiện Tượng Trực Đối & Chuyển Động Nghịch Hành Biểu Kiến</div>
+    <div style="font-size: 0.85rem; color: #94a3b8;">Hiện tượng Trực Đối & Chuyển Động Nghịch Hành</div>
   </header>
 
-  <div id="main-container">
-    <canvas id="simCanvas"></canvas>
+  <div id="viewport">
+    <canvas id="mainCanvas"></canvas>
 
-    <!-- Mini Sky View (Cung nghịch hành nhìn từ Trái Đất) -->
-    <div class="sky-box">
-      <div class="sky-box-header">
+    <!-- Hộp quan sát biểu kiến từ Trái Đất -->
+    <div class="sky-widget glass-panel">
+      <div class="sky-widget-header">
         <span>Góc nhìn biểu kiến từ Trái Đất</span>
-        <small style="color:#ef4444;">Vệt Nghịch Hành</small>
+        <span style="color:#f43f5e; font-size: 0.75rem;">Vệt Nghịch Hành</span>
       </div>
-      <canvas id="skyCanvas" width="250" height="130"></canvas>
+      <canvas id="skyCanvas" width="260" height="130"></canvas>
     </div>
 
-    <!-- Right Control Panel -->
-    <div class="control-panel">
-      <div class="panel-title">Bảng Điều Khiển</div>
+    <!-- Bảng điều khiển bên phải -->
+    <div class="control-panel glass-panel">
+      <div class="panel-heading">Cấu hình mô phỏng</div>
 
-      <div class="control-group">
-        <label>Tốc độ mô phỏng (<span id="speedVal">1.0</span>x)</label>
-        <div class="slider-row">
+      <div class="control-item">
+        <label>Tốc độ thời gian (<span id="speedDisplay">1.0</span>x)</label>
+        <div class="slider-container">
           <input type="range" id="speedSlider" min="0.1" max="4.0" step="0.1" value="1.0">
         </div>
       </div>
 
-      <div class="control-group">
-        <label>Độ lệch tâm Sao Hỏa e (<span id="eccVal">0.09</span>)</label>
-        <div class="slider-row">
+      <div class="control-item">
+        <label>Độ lệch tâm Sao Hỏa e (<span id="eccDisplay">0.09</span>)</label>
+        <div class="slider-container">
           <input type="range" id="eccSlider" min="0.0" max="0.4" step="0.01" value="0.09">
         </div>
       </div>
 
-      <div class="control-group checkbox-row">
-        <input type="checkbox" id="showEarth" checked>
-        <label for="showEarth" style="margin:0;">Hiển thị Quỹ đạo Trái Đất</label>
+      <div class="toggle-item">
+        <input type="checkbox" id="chkEarth" checked>
+        <label for="chkEarth" style="cursor:pointer;">Quỹ đạo & Vị trí Trái Đất</label>
       </div>
 
-      <div class="control-group checkbox-row">
-        <input type="checkbox" id="showSightline" checked>
-        <label for="showSightline" style="margin:0;">Đường ngắm Trái Đất ➔ Sao Hỏa</label>
+      <div class="toggle-item">
+        <input type="checkbox" id="chkSightline" checked>
+        <label for="chkSightline" style="cursor:pointer;">Đường ngắm Trái Đất ➔ Sao Hỏa</label>
       </div>
 
-      <div class="control-group checkbox-row">
-        <input type="checkbox" id="showSweep">
-        <label for="showSweep" style="margin:0;">Cung quét diện tích (ĐL 2 Kepler)</label>
+      <div class="toggle-item">
+        <input type="checkbox" id="chkSweep">
+        <label for="chkSweep" style="cursor:pointer;">Cung quét diện tích (ĐL 2 Kepler)</label>
       </div>
 
-      <div class="btn-row">
-        <button id="pauseBtn" class="primary">Tạm dừng</button>
-        <button id="resetBtn">Đặt lại</button>
+      <div class="btn-group">
+        <button id="btnPause" class="btn-primary">Tạm dừng</button>
+        <button id="btnReset">Đặt lại</button>
       </div>
 
-      <div class="panel-title" style="margin-top: 6px;">Thông Số Hiện Thời</div>
-      <div class="telemetry">
-        <div>Khoảng cách Đất - Hỏa: <span id="telDist" style="color:#fff;">0.00</span> AU</div>
-        <div>Vận tốc Sao Hỏa: <span id="telVMars" style="color:#ff758f;">0.00</span> km/s</div>
-        <div>Trạng thái quỹ đạo:</div>
-        <div id="statusBadge" class="status-badge status-normal">Thuận hành (Prograde)</div>
+      <div class="panel-heading" style="margin-top: 4px;">Dữ liệu Động học</div>
+      <div class="metrics">
+        <div>Khoảng cách: <span id="valDist" style="color:#fff;">0.00</span> AU</div>
+        <div>Vận tốc Hỏa: <span id="valVMars" style="color:#fb7185;">0.00</span> km/s</div>
+        <div>Trạng thái:</div>
+        <div id="badgeStatus" class="status-tag tag-pro">Thuận hành (Prograde)</div>
       </div>
     </div>
   </div>
 
   <script>
-    // Canvas chính & phụ
-    const canvas = document.getElementById("simCanvas");
+    const canvas = document.getElementById("mainCanvas");
     const ctx = canvas.getContext("2d");
     const skyCanvas = document.getElementById("skyCanvas");
     const skyCtx = skyCanvas.getContext("2d");
 
-    // UI elements
     const speedSlider = document.getElementById("speedSlider");
-    const speedVal = document.getElementById("speedVal");
+    const speedDisplay = document.getElementById("speedDisplay");
     const eccSlider = document.getElementById("eccSlider");
-    const eccVal = document.getElementById("eccVal");
-    const showEarth = document.getElementById("showEarth");
-    const showSightline = document.getElementById("showSightline");
-    const showSweep = document.getElementById("showSweep");
-    const pauseBtn = document.getElementById("pauseBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const telDist = document.getElementById("telDist");
-    const telVMars = document.getElementById("telVMars");
-    const statusBadge = document.getElementById("statusBadge");
+    const eccDisplay = document.getElementById("eccDisplay");
+    const chkEarth = document.getElementById("chkEarth");
+    const chkSightline = document.getElementById("chkSightline");
+    const chkSweep = document.getElementById("chkSweep");
+    const btnPause = document.getElementById("btnPause");
+    const btnReset = document.getElementById("btnReset");
+    const valDist = document.getElementById("valDist");
+    const valVMars = document.getElementById("valVMars");
+    const badgeStatus = document.getElementById("badgeStatus");
 
-    // Thông số Thiên văn chuẩn
-    const a_Earth = 1.0;          // Bán trục lớn Trái Đất (AU)
-    const e_Earth = 0.0167;       // Độ lệch tâm Trái Đất
-    const a_Mars = 1.524;         // Bán trục lớn Sao Hỏa (AU)
-    let e_Mars = 0.0934;          // Độ lệch tâm Sao Hỏa (cho phép chỉnh)
-    const T_Mars_Ratio = 1.881;   // Chu kỳ Sao Hỏa = 1.881 năm Trái Đất
+    // Tham số quỹ đạo
+    const a_Earth = 1.0;
+    const e_Earth = 0.0167;
+    const a_Mars = 1.524;
+    let e_Mars = 0.0934;
+    const T_Mars_Ratio = 1.881; // Chu kỳ năm Sao Hỏa so với Trái Đất
 
-    let meanAnomalyEarth = 0;
-    let meanAnomalyMars = Math.PI * 0.2; // Bắt đầu lệch nhẹ
+    let M_Earth = 0;
+    let M_Mars = Math.PI * 0.25;
     let isRunning = true;
     let timeScale = 1.0;
 
-    // Lưu vết đường ngắm & chuyển động biểu kiến
-    const sightHistory = [];
+    const sightlines = [];
     const skyTrail = [];
-    const MAX_SIGHT = 120;
-    const MAX_SKY = 300;
+    const stars = [];
 
-    function resizeCanvas() {
+    // Khởi tạo nền sao ngẫu nhiên
+    for (let i = 0; i < 120; i++) {
+      stars.push({
+        x: Math.random(),
+        y: Math.random(),
+        size: Math.random() * 1.5 + 0.5,
+        alpha: Math.random() * 0.8 + 0.2
+      });
+    }
+
+    function resize() {
       canvas.width = canvas.parentElement.clientWidth;
       canvas.height = canvas.parentElement.clientHeight;
     }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+    window.addEventListener("resize", resize);
+    resize();
 
-    // Phương trình Kepler: M = E - e*sin(E)
+    // Giải phương trình Kepler: M = E - e*sin(E)
     function solveKepler(M, ecc) {
       let E = M;
       for (let i = 0; i < 10; i++) {
@@ -328,158 +328,143 @@
       return E;
     }
 
-    let prevSkyAngle = null;
+    let prevAngle = null;
     let isRetrograde = false;
 
-    function animate() {
+    function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Vẽ nền sao lấp lánh
+      stars.forEach(s => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
+        ctx.beginPath();
+        ctx.arc(s.x * canvas.width, s.y * canvas.height, s.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
 
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      
-      // Tỷ lệ hiển thị (pixels / AU)
-      const scale = Math.min(canvas.width, canvas.height) / 4.2;
+      const scale = Math.min(canvas.width, canvas.height) / 4.3;
 
-      // Tính toán thông số hình học Trái Đất
-      const aE_px = a_Earth * scale;
-      const bE_px = aE_px * Math.sqrt(1 - e_Earth * e_Earth);
-      const cE_px = aE_px * e_Earth;
+      // Tính hình học Ellipse
+      const aE = a_Earth * scale;
+      const bE = aE * Math.sqrt(1 - e_Earth * e_Earth);
+      const cE = aE * e_Earth;
 
-      // Tính toán thông số hình học Sao Hỏa
-      const aM_px = a_Mars * scale;
-      const bM_px = aM_px * Math.sqrt(1 - e_Mars * e_Mars);
-      const cM_px = aM_px * e_Mars;
+      const aM = a_Mars * scale;
+      const bM = aM * Math.sqrt(1 - e_Mars * e_Mars);
+      const cM = aM * e_Mars;
 
-      // Mặt Trời tại (centerX, centerY) - Tiêu điểm chung của cả 2 Ellipse
+      // Mặt Trời là tiêu điểm gốc tại (centerX, centerY)
       const sunX = centerX;
       const sunY = centerY;
 
-      // Tâm ellipse Trái Đất & Sao Hỏa
-      const centerEarthX = sunX + cE_px;
-      const centerEarthY = sunY;
-      const centerMarsX = sunX + cM_px;
-      const centerMarsY = sunY;
-
-      // Cập nhật vị trí góc M theo thời gian
       if (isRunning) {
-        const dM_Earth = 0.012 * timeScale;
-        meanAnomalyEarth = (meanAnomalyEarth + dM_Earth) % (2 * Math.PI);
-        meanAnomalyMars = (meanAnomalyMars + dM_Earth / T_Mars_Ratio) % (2 * Math.PI);
+        const dM = 0.012 * timeScale;
+        M_Earth = (M_Earth + dM) % (2 * Math.PI);
+        M_Mars = (M_Mars + dM / T_Mars_Ratio) % (2 * Math.PI);
       }
 
-      // Tọa độ Trái Đất
-      const EE = solveKepler(meanAnomalyEarth, e_Earth);
+      // Vị trí Trái Đất
+      const EE = solveKepler(M_Earth, e_Earth);
       const nuE = 2 * Math.atan2(Math.sqrt(1 + e_Earth) * Math.sin(EE / 2), Math.sqrt(1 - e_Earth) * Math.cos(EE / 2));
-      const rE_AU = a_Earth * (1 - e_Earth * Math.cos(EE));
-      const earthX = sunX - (rE_AU * scale) * Math.cos(nuE);
-      const earthY = sunY - (rE_AU * scale) * Math.sin(nuE);
+      const rE = a_Earth * (1 - e_Earth * Math.cos(EE)) * scale;
+      const earthX = sunX - rE * Math.cos(nuE);
+      const earthY = sunY - rE * Math.sin(nuE);
 
-      // Tọa độ Sao Hỏa
-      const EM = solveKepler(meanAnomalyMars, e_Mars);
+      // Vị trí Sao Hỏa
+      const EM = solveKepler(M_Mars, e_Mars);
       const nuM = 2 * Math.atan2(Math.sqrt(1 + e_Mars) * Math.sin(EM / 2), Math.sqrt(1 - e_Mars) * Math.cos(EM / 2));
       const rM_AU = a_Mars * (1 - e_Mars * Math.cos(EM));
-      const marsX = sunX - (rM_AU * scale) * Math.cos(nuM);
-      const marsY = sunY - (rM_AU * scale) * Math.sin(nuM);
+      const rM = rM_AU * scale;
+      const marsX = sunX - rM * Math.cos(nuM);
+      const marsY = sunY - rM * Math.sin(nuM);
 
-      // Tính khoảng cách & góc nhìn biểu kiến
+      // Tính khoảng cách & góc nhìn từ Trái Đất
       const dx = marsX - earthX;
       const dy = marsY - earthY;
       const dist_AU = Math.sqrt(dx * dx + dy * dy) / scale;
-      const skyAngle = Math.atan2(dy, dx);
+      const curAngle = Math.atan2(dy, dx);
 
-      // Xác định Trạng thái Nghịch hành (d/dt góc nhìn biểu kiến đổi dấu)
-      if (prevSkyAngle !== null && isRunning) {
-        let diff = skyAngle - prevSkyAngle;
+      if (prevAngle !== null && isRunning) {
+        let diff = curAngle - prevAngle;
         if (diff > Math.PI) diff -= 2 * Math.PI;
         if (diff < -Math.PI) diff += 2 * Math.PI;
-        // Chuẩn quay thuận là ngược chiều kim đồng hồ (diff > 0). Nếu diff < 0 là Nghịch hành
-        isRetrograde = diff < 0;
+        isRetrograde = diff < 0; // Đổi chiều góc quét biểu kiến
       }
-      prevSkyAngle = skyAngle;
+      prevAngle = curAngle;
 
-      // Xác định Trạng thái Trực đối (Trái Đất nằm giữa Mặt Trời & Sao Hỏa -> dist nhỏ nhất)
       const isOpposition = dist_AU < 0.65;
 
-      // Lưu lịch sử đường ngắm
-      if (isRunning && showSightline.checked) {
-        sightHistory.push({ ex: earthX, ey: earthY, mx: marsX, my: marsY, isRetro: isRetrograde });
-        if (sightHistory.length > MAX_SIGHT) sightHistory.shift();
+      if (isRunning && chkSightline.checked) {
+        sightlines.push({ ex: earthX, ey: earthY, mx: marsX, my: marsY, retro: isRetrograde });
+        if (sightlines.length > 130) sightlines.shift();
 
-        skyTrail.push({ angle: skyAngle, dist: dist_AU, isRetro: isRetrograde });
-        if (skyTrail.length > MAX_SKY) skyTrail.shift();
+        skyTrail.push({ angle: curAngle, retro: isRetrograde });
+        if (skyTrail.length > 320) skyTrail.shift();
       }
 
-      // ----------------------------------------------------
-      // VẼ MẶT BẰNG QUỸ ĐẠO
-      // ----------------------------------------------------
-
-      // 1. Quỹ đạo Trái Đất
-      if (showEarth.checked) {
+      // 2. Vẽ Quỹ Đạo
+      if (chkEarth.checked) {
         ctx.beginPath();
-        ctx.ellipse(centerEarthX, centerEarthY, aE_px, bE_px, 0, 0, 2 * Math.PI);
-        ctx.strokeStyle = "rgba(56, 189, 248, 0.3)";
+        ctx.ellipse(sunX + cE, sunY, aE, bE, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.25)";
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
 
-      // 2. Quỹ đạo Sao Hỏa
       ctx.beginPath();
-      ctx.ellipse(centerMarsX, centerMarsY, aM_px, bM_px, 0, 0, 2 * Math.PI);
-      ctx.strokeStyle = "rgba(255, 117, 143, 0.4)";
+      ctx.ellipse(sunX + cM, sunY, aM, bM, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(244, 63, 94, 0.35)";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 3. Quạt quét diện tích Sao Hỏa (Kepler 2nd Law)
-      if (showSweep.checked) {
-        ctx.fillStyle = "rgba(239, 68, 68, 0.15)";
+      // 3. Cung quét Kepler 2
+      if (chkSweep.checked) {
+        ctx.fillStyle = "rgba(244, 63, 94, 0.15)";
         ctx.beginPath();
         ctx.moveTo(sunX, sunY);
-        const steps = 25;
-        const startM = (meanAnomalyMars - 0.25 + 2 * Math.PI) % (2 * Math.PI);
-        for (let i = 0; i <= steps; i++) {
-          let curM = startM + (0.25 / steps) * i;
-          let curE = solveKepler(curM, e_Mars);
-          let curNu = 2 * Math.atan2(Math.sqrt(1 + e_Mars) * Math.sin(curE / 2), Math.sqrt(1 - e_Mars) * Math.cos(curE / 2));
-          let curR = a_Mars * (1 - e_Mars * Math.cos(curE)) * scale;
-          let px = sunX - curR * Math.cos(curNu);
-          let py = sunY - curR * Math.sin(curNu);
-          ctx.lineTo(px, py);
+        for (let i = 0; i <= 20; i++) {
+          let sm = (M_Mars - 0.25 + 0.25 * (i / 20) + 2 * Math.PI) % (2 * Math.PI);
+          let se = solveKepler(sm, e_Mars);
+          let snu = 2 * Math.atan2(Math.sqrt(1 + e_Mars) * Math.sin(se / 2), Math.sqrt(1 - e_Mars) * Math.cos(se / 2));
+          let sr = a_Mars * (1 - e_Mars * Math.cos(se)) * scale;
+          ctx.lineTo(sunX - sr * Math.cos(snu), sunY - sr * Math.sin(snu));
         }
         ctx.closePath();
         ctx.fill();
       }
 
-      // 4. Các đường ngắm quá khứ (Sightlines)
-      if (showSightline.checked && showEarth.checked) {
-        sightHistory.forEach((line, idx) => {
+      // 4. Đường ngắm (Sightlines)
+      if (chkSightline.checked && chkEarth.checked) {
+        sightlines.forEach((l, idx) => {
           ctx.beginPath();
-          ctx.moveTo(line.ex, line.ey);
-          ctx.lineTo(line.mx, line.my);
-          const alpha = (idx / sightHistory.length) * 0.35;
-          ctx.strokeStyle = line.isRetro ? `rgba(239, 68, 68, ${alpha * 1.5})` : `rgba(148, 163, 184, ${alpha})`;
-          ctx.lineWidth = line.isRetro ? 1.5 : 0.8;
+          ctx.moveTo(l.ex, l.ey);
+          ctx.lineTo(l.mx, l.my);
+          const alpha = (idx / sightlines.length) * 0.35;
+          ctx.strokeStyle = l.retro ? `rgba(244, 63, 94, ${alpha * 1.5})` : `rgba(148, 163, 184, ${alpha})`;
+          ctx.lineWidth = l.retro ? 1.5 : 0.8;
           ctx.stroke();
         });
 
-        // Đường ngắm hiện tại
         ctx.beginPath();
         ctx.moveTo(earthX, earthY);
         ctx.lineTo(marsX, marsY);
-        ctx.strokeStyle = isRetrograde ? "#f87171" : "#38bdf8";
+        ctx.strokeStyle = isRetrograde ? "#fb7185" : "#38bdf8";
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
         ctx.stroke();
         ctx.setLineDash([]);
       }
 
-      // 5. MẶT TRỜI (Sun)
-      const sunGlow = ctx.createRadialGradient(sunX, sunY, 3, sunX, sunY, 30);
-      sunGlow.addColorStop(0, "#ffb703");
-      sunGlow.addColorStop(0.5, "#fb8500");
+      // 5. MẶT TRỜI
+      const sunGlow = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 32);
+      sunGlow.addColorStop(0, "#fbbf24");
+      sunGlow.addColorStop(0.5, "#f59e0b");
       sunGlow.addColorStop(1, "transparent");
       ctx.fillStyle = sunGlow;
       ctx.beginPath();
-      ctx.arc(sunX, sunY, 30, 0, Math.PI * 2);
+      ctx.arc(sunX, sunY, 32, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = "#fffbeb";
@@ -487,102 +472,91 @@
       ctx.arc(sunX, sunY, 11, 0, Math.PI * 2);
       ctx.fill();
 
-      // 6. TRÁI ĐẤT (Earth)
-      if (showEarth.checked) {
-        // Hào quang khí quyển Trái Đất
-        const earthGlow = ctx.createRadialGradient(earthX, earthY, 4, earthX, earthY, 16);
-        earthGlow.addColorStop(0, "#38bdf8");
+      // 6. TRÁI ĐẤT
+      if (chkEarth.checked) {
+        const earthGlow = ctx.createRadialGradient(earthX, earthY, 4, earthX, earthY, 18);
+        earthGlow.addColorStop(0, "rgba(56, 189, 248, 0.6)");
         earthGlow.addColorStop(1, "transparent");
         ctx.fillStyle = earthGlow;
         ctx.beginPath();
-        ctx.arc(earthX, earthY, 16, 0, Math.PI * 2);
+        ctx.arc(earthX, earthY, 18, 0, Math.PI * 2);
         ctx.fill();
 
-        // Thân Trái Đất
-        const earthGrad = ctx.createRadialGradient(earthX - 2, earthY - 2, 1, earthX, earthY, 8);
-        earthGrad.addColorStop(0, "#90e0ef");
-        earthGrad.addColorStop(0.6, "#0077b6");
-        earthGrad.addColorStop(1, "#03045e");
-        ctx.fillStyle = earthGrad;
+        const earthBody = ctx.createRadialGradient(earthX - 2, earthY - 2, 1, earthX, earthY, 9);
+        earthBody.addColorStop(0, "#93c5fd");
+        earthBody.addColorStop(0.6, "#2563eb");
+        earthBody.addColorStop(1, "#1e3a8a");
+        ctx.fillStyle = earthBody;
         ctx.beginPath();
-        ctx.arc(earthX, earthY, 8, 0, Math.PI * 2);
+        ctx.arc(earthX, earthY, 9, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = "#e2e8f0";
+        ctx.fillStyle = "#cbd5e1";
         ctx.font = "11px sans-serif";
-        ctx.fillText("Trái Đất", earthX + 12, earthY + 4);
+        ctx.fillText("Trái Đất", earthX + 14, earthY + 4);
       }
 
-      // 7. SAO HỎA (Mars) - Thiết kế lớn, hiện đại & rực rỡ hơn
-      // Hào quang Đỏ Sao Hỏa
-      const marsGlowRadius = isOpposition ? 28 : 22;
-      const marsGlow = ctx.createRadialGradient(marsX, marsY, 5, marsX, marsY, marsGlowRadius);
-      marsGlow.addColorStop(0, isOpposition ? "rgba(255, 77, 109, 0.8)" : "rgba(239, 68, 68, 0.6)");
+      // 7. SAO HỎA (Thiết kế lớn, rực rỡ và sắc nét)
+      const marsRadius = 13; // Kích thước to hơn
+      const glowR = isOpposition ? 32 : 24;
+      const marsGlow = ctx.createRadialGradient(marsX, marsY, 6, marsX, marsY, glowR);
+      marsGlow.addColorStop(0, isOpposition ? "rgba(244, 63, 94, 0.85)" : "rgba(244, 63, 94, 0.5)");
       marsGlow.addColorStop(1, "transparent");
       ctx.fillStyle = marsGlow;
       ctx.beginPath();
-      ctx.arc(marsX, marsY, marsGlowRadius, 0, Math.PI * 2);
+      ctx.arc(marsX, marsY, glowR, 0, Math.PI * 2);
       ctx.fill();
 
-      // Thân Sao Hỏa
-      const marsRadius = 11; // To hơn rõ rệt
-      const marsGrad = ctx.createRadialGradient(marsX - 3, marsY - 3, 2, marsX, marsY, marsRadius);
-      marsGrad.addColorStop(0, "#ff758f");
-      marsGrad.addColorStop(0.5, "#ff4d6d");
-      marsGrad.addColorStop(0.85, "#c9184a");
-      marsGrad.addColorStop(1, "#590d22");
-      ctx.fillStyle = marsGrad;
+      const marsBody = ctx.createRadialGradient(marsX - 3, marsY - 3, 2, marsX, marsY, marsRadius);
+      marsBody.addColorStop(0, "#fda4af");
+      marsBody.addColorStop(0.3, "#f43f5e");
+      marsBody.addColorStop(0.7, "#be123c");
+      marsBody.addColorStop(1, "#4c0519");
+      ctx.fillStyle = marsBody;
       ctx.beginPath();
       ctx.arc(marsX, marsY, marsRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Chi tiết chỏm băng cực (Polar ice cap)
-      ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+      // Chỏm băng cực
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
       ctx.beginPath();
-      ctx.arc(marsX - 2, marsY - marsRadius + 3, 3, 0, Math.PI * 2);
+      ctx.arc(marsX - 2, marsY - marsRadius + 3.5, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = "#ffb703";
+      ctx.fillStyle = "#fbcfe8";
       ctx.font = "bold 12px sans-serif";
-      ctx.fillText("Sao Hỏa", marsX + 15, marsY + 4);
+      ctx.fillText("Sao Hỏa", marsX + 18, marsY + 4);
 
-      // ----------------------------------------------------
-      // CẬP NHẬT TELEMETRY & BẦU TRỜI NGHỊCH HÀNH (SKY CANVAS)
-      // ----------------------------------------------------
+      // Cập nhật số liệu & trạng thái
       const mu = 132712440018;
       const rM_km = rM_AU * 149597870.7;
       const aM_km = a_Mars * 149597870.7;
       const vMars = Math.sqrt(mu * (2 / rM_km - 1 / aM_km));
 
-      telDist.innerText = dist_AU.toFixed(3);
-      telVMars.innerText = vMars.toFixed(2);
+      valDist.innerText = dist_AU.toFixed(3);
+      valVMars.innerText = vMars.toFixed(2);
 
       if (isRetrograde) {
-        statusBadge.innerText = "⚡ Đang Nghịch Hành (Retrograde)";
-        statusBadge.className = "status-badge status-retro";
+        badgeStatus.innerText = "⚡ Đang Nghịch Hành (Retrograde)";
+        badgeStatus.className = "status-tag tag-retro";
       } else if (isOpposition) {
-        statusBadge.innerText = "🌟 Đang Trực Đối (Opposition)";
-        statusBadge.className = "status-badge status-opp";
+        badgeStatus.innerText = "🌟 Đang Trực Đối (Opposition)";
+        badgeStatus.className = "status-tag tag-opp";
       } else {
-        statusBadge.innerText = "Thuận hành (Prograde)";
-        statusBadge.className = "status-badge status-normal";
+        badgeStatus.innerText = "Thuận hành (Prograde)";
+        badgeStatus.className = "status-tag tag-pro";
       }
 
-      // Vẽ Mini Sky View
-      drawSkyCanvas();
-
-      requestAnimationFrame(animate);
+      drawSky();
+      requestAnimationFrame(render);
     }
 
-    // Vẽ chuyển động biểu kiến hình thắt nút (Retrograde Loop) trên bầu trời
-    function drawSkyCanvas() {
+    function drawSky() {
       skyCtx.clearRect(0, 0, skyCanvas.width, skyCanvas.height);
-
       const w = skyCanvas.width;
       const h = skyCanvas.height;
 
-      // Lưới bầu trời đêm
-      skyCtx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      skyCtx.strokeStyle = "rgba(255, 255, 255, 0.08)";
       skyCtx.beginPath();
       skyCtx.moveTo(0, h / 2); skyCtx.lineTo(w, h / 2);
       skyCtx.stroke();
@@ -591,86 +565,58 @@
 
       skyCtx.lineWidth = 2;
       for (let i = 0; i < skyTrail.length - 1; i++) {
-        const pt1 = skyTrail[i];
-        const pt2 = skyTrail[i + 1];
+        const p1 = skyTrail[i];
+        const p2 = skyTrail[i + 1];
 
-        // Quy đổi góc sang tọa độ X trên bầu trời
-        const x1 = (w / 2) + pt1.angle * 35;
-        const y1 = (h / 2) + Math.sin(pt1.angle * 2) * 20;
-        const x2 = (w / 2) + pt2.angle * 35;
-        const y2 = (h / 2) + Math.sin(pt2.angle * 2) * 20;
+        const x1 = (w / 2) + p1.angle * 38;
+        const y1 = (h / 2) + Math.sin(p1.angle * 2) * 22;
+        const x2 = (w / 2) + p2.angle * 38;
+        const y2 = (h / 2) + Math.sin(p2.angle * 2) * 22;
 
         skyCtx.beginPath();
         skyCtx.moveTo(x1, y1);
         skyCtx.lineTo(x2, y2);
-        skyCtx.strokeStyle = pt2.isRetro ? "#f87171" : "#38bdf8";
+        skyCtx.strokeStyle = p2.retro ? "#fb7185" : "#38bdf8";
         skyCtx.stroke();
       }
 
-      // Vị trí Sao Hỏa hiện tại trên bầu trời
-      const curr = skyTrail[skyTrail.length - 1];
-      if (curr) {
-        const cx = (w / 2) + curr.angle * 35;
-        const cy = (h / 2) + Math.sin(curr.angle * 2) * 20;
-
-        skyCtx.fillStyle = "#ff4d6d";
+      const last = skyTrail[skyTrail.length - 1];
+      if (last) {
+        const lx = (w / 2) + last.angle * 38;
+        const ly = (h / 2) + Math.sin(last.angle * 2) * 22;
+        skyCtx.fillStyle = "#f43f5e";
         skyCtx.beginPath();
-        skyCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+        skyCtx.arc(lx, ly, 5, 0, Math.PI * 2);
         skyCtx.fill();
       }
     }
 
-    // Event Listeners
     speedSlider.addEventListener("input", (e) => {
       timeScale = parseFloat(e.target.value);
-      speedVal.innerText = timeScale.toFixed(1);
+      speedDisplay.innerText = timeScale.toFixed(1);
     });
 
     eccSlider.addEventListener("input", (e) => {
       e_Mars = parseFloat(e.target.value);
-      eccVal.innerText = e_Mars.toFixed(2);
-      sightHistory.length = 0;
+      eccDisplay.innerText = e_Mars.toFixed(2);
+      sightlines.length = 0;
       skyTrail.length = 0;
     });
 
-    pauseBtn.addEventListener("click", () => {
+    btnPause.addEventListener("click", () => {
       isRunning = !isRunning;
-      pauseBtn.innerText = isRunning ? "Tạm dừng" : "Tiếp tục";
-      pauseBtn.className = isRunning ? "primary" : "";
+      btnPause.innerText = isRunning ? "Tạm dừng" : "Tiếp tục";
+      btnPause.className = isRunning ? "btn-primary" : "";
     });
 
-    resetBtn.addEventListener("click", () => {
-      meanAnomalyEarth = 0;
-      meanAnomalyMars = Math.PI * 0.2;
-      sightHistory.length = 0;
+    btnReset.addEventListener("click", () => {
+      M_Earth = 0;
+      M_Mars = Math.PI * 0.25;
+      sightlines.length = 0;
       skyTrail.length = 0;
     });
 
-    // Start
-    animate();
+    render();
   </script>
 </body>
 </html>
-```eofs
-
-### Những cải tiến nổi bật trong bản nâng cấp này:
-
-1. **Hiển thị song song 2 Quỹ đạo (Trái Đất & Sao Hỏa):**
-   * Mô phỏng chính xác vận tốc góc (Trái Đất quay nhanh hơn Sao Hỏa theo tỉ lệ chu kỳ $1 : 1.881$).
-   * Đường nối vị trí hai hành tinh (Line of sight) hiển thị trực quan cách Trái Đất "vượt mặt" Sao Hỏa.
-
-2. **Mô phỏng Hiện tượng Trực đối & Chuyển động Nghịch hành (Retrograde):**
-   * **Bảng trạng thái (Telemetry):** Tự động phát hiện và bật cảnh báo màu vàng khi ở điểm **Trực đối (Opposition)** và màu đỏ khi Sao Hỏa đi vào vùng **Nghịch hành (Retrograde)**.
-   * **Khung bầu trời thu nhỏ (Mini Sky View):** Ở góc dưới bên trái, mô phỏng đúng đường cong thắt nút (retrograde loop) của Sao Hỏa khi nhìn từ Trái Đất.
-
-3. **Tạo hình Sao Hỏa & Trái Đất hiện đại:**
-   * Kích thước Sao Hỏa được tăng lên rõ rệt với hiệu ứng gradient 3D đa tầng, chỏm băng cực trắng ở đỉnh và hiệu ứng hào quang khí quyển (glow) rực rỡ.
-   * Trái Đất được thiết kế với tông màu xanh lam neon rực rỡ và hiệu ứng tỏa sáng chân thực.
-
----
-
-### Các bước cập nhật trên GitHub của bạn:
-1. Truy cập vào repository **Sao-Hoa-Va-Mat-Troi** trên GitHub.
-2. Mở file `index.html`, bấm biểu tượng cây bút **Edit this file**.
-3. Dán toàn bộ đoạn code mới ở trên thay thế nội dung cũ.
-4. Bấm **Commit changes...** để lưu lại. Trang web sẽ tự động cập nhật sau khoảng 30 giây!
