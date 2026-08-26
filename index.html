@@ -18,6 +18,7 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
+      user-select: none;
     }
     header {
       padding: 12px 24px;
@@ -60,6 +61,7 @@
       display: block;
       width: 100%;
       height: 100%;
+      cursor: default;
     }
 
     /* Khung hiệu ứng kính mờ (Glassmorphism) */
@@ -71,12 +73,12 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }
 
-    /* Bảng Thông tin Kết luận bên trái (vùng trống) */
+    /* Bảng Thông tin Kết luận bên trái (ngắn gọn) */
     .info-card {
       position: absolute;
       top: 18px;
       left: 18px;
-      width: 320px;
+      width: 310px;
       padding: 16px 18px;
       z-index: 5;
     }
@@ -97,9 +99,9 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      font-size: 0.8rem;
-      line-height: 1.45;
+      gap: 10px;
+      font-size: 0.82rem;
+      line-height: 1.5;
       color: #cbd5e1;
     }
     .info-list li {
@@ -257,17 +259,17 @@
   <div id="viewport">
     <canvas id="mainCanvas"></canvas>
 
-    <!-- Bảng Kết luận Quỹ đạo (Vùng trống bên trái) -->
+    <!-- Bảng Kết luận Quỹ đạo (Đã tinh gọn trọng tâm) -->
     <div class="info-card glass-panel">
       <div class="info-title">
         <span>🪐 Kết Luận Quỹ Đạo Sao Hỏa</span>
       </div>
       <ul class="info-list">
-        <li><strong>Dạng quỹ đạo:</strong> Là hình <em>Ellipse</em> rõ nét với bán trục lớn <span style="color:#38bdf8;">a ≈ 1.524 AU</span> (~228 triệu km).</li>
-        <li><strong>Tiêu điểm:</strong> Mặt Trời ngự tại tiêu điểm <span style="color:#fbbf24;">F₁</span>. Tiêu điểm đối xứng <span style="color:#94a3b8;">F₂</span> hoàn toàn trống rỗng trong không gian.</li>
-        <li><strong>Độ lệch tâm (e ≈ 0.0934):</strong> Lớn gấp gần 6 lần Trái Đất, làm khoảng cách Cận nhật (~206.6 tr.km) và Viễn nhật (~249.2 tr.km) chênh lệch rất lớn (~42.6 tr.km).</li>
-        <li><strong>Định luật 2 Kepler:</strong> Tốc độ không đều — di chuyển nhanh nhất ở Cận nhật (~26.5 km/s) và chậm nhất ở Viễn nhật (~22.0 km/s).</li>
-        <li><strong>Chu kỳ & Nghịch hành:</strong> Chu kỳ năm bằng 1.88 năm Trái Đất; chu kỳ giao hội trực đối là ~26 tháng. Khi Trái Đất vượt mặt, Sao Hỏa biểu kiến đi lùi (Nghịch hành).</li>
+        <li><strong>Hình dạng quỹ đạo:</strong> Sao Hỏa chuyển động theo quỹ đạo <strong>hình Ellipse</strong> lệch tâm (<span style="color:#38bdf8;">e ≈ 0.0934</span>).</li>
+        <li><strong>Vị trí tiêu điểm:</strong> <strong>Mặt Trời</strong> nằm tại một tiêu điểm (<span style="color:#fbbf24;">F₁</span>). Tiêu điểm thứ hai (<span style="color:#94a3b8;">F₂</span>) hoàn toàn rỗng trong không gian.</li>
+        <li style="color:#f43f5e; font-size:0.78rem; font-style:italic; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 6px; margin-top: 2px;">
+          👉 <strong>Tương tác:</strong> Bạn có thể dùng chuột hoặc chạm tay để <strong>kéo Sao Hỏa di chuyển trực tiếp</strong> trên quỹ đạo!
+        </li>
       </ul>
     </div>
 
@@ -366,6 +368,11 @@
     let isRunning = true;
     let timeScale = 1.0;
 
+    // Biến phục vụ kéo thả Sao Hỏa
+    let isDraggingMars = false;
+    let currentMarsPos = { x: 0, y: 0 };
+    const marsHitRadius = 24; // Bán kính nhận diện chuột/chạm
+
     const sightlines = [];
     const skyTrail = [];
     const stars = [];
@@ -433,7 +440,7 @@
       const f2X = centerMarsX + cM; // Tiêu điểm 2 rỗng
       const f2Y = sunY;
 
-      if (isRunning) {
+      if (isRunning && !isDraggingMars) {
         const dM = 0.012 * timeScale;
         M_Earth = (M_Earth + dM) % (2 * Math.PI);
         M_Mars = (M_Mars + dM / T_Mars_Ratio) % (2 * Math.PI);
@@ -454,13 +461,16 @@
       const marsX = sunX - rM * Math.cos(nuM);
       const marsY = sunY - rM * Math.sin(nuM);
 
+      // Lưu lại tọa độ để bắt tương tác kéo/thả chuột
+      currentMarsPos = { x: marsX, y: marsY };
+
       // Khoảng cách & Góc nhìn
       const dx = marsX - earthX;
       const dy = marsY - earthY;
       const dist_AU = Math.sqrt(dx * dx + dy * dy) / scale;
       const curAngle = Math.atan2(dy, dx);
 
-      if (prevAngle !== null && isRunning) {
+      if (prevAngle !== null && (isRunning || isDraggingMars)) {
         let diff = curAngle - prevAngle;
         if (diff > Math.PI) diff -= 2 * Math.PI;
         if (diff < -Math.PI) diff += 2 * Math.PI;
@@ -470,7 +480,7 @@
 
       const isOpposition = dist_AU < 0.65;
 
-      if (isRunning && chkSightline.checked) {
+      if ((isRunning || isDraggingMars) && chkSightline.checked) {
         sightlines.push({ ex: earthX, ey: earthY, mx: marsX, my: marsY, retro: isRetrograde });
         if (sightlines.length > 130) sightlines.shift();
 
@@ -605,16 +615,27 @@
         ctx.fillText("Trái Đất", earthX + 14, earthY + 4);
       }
 
-      // 9. SAO HỎA
+      // 9. SAO HỎA (Hỗ trợ hiệu ứng khi Drag/Hover)
       const marsRadius = 13;
-      const glowR = isOpposition ? 32 : 24;
+      const glowR = isDraggingMars ? 38 : (isOpposition ? 32 : 24);
       const marsGlow = ctx.createRadialGradient(marsX, marsY, 6, marsX, marsY, glowR);
-      marsGlow.addColorStop(0, isOpposition ? "rgba(244, 63, 94, 0.85)" : "rgba(244, 63, 94, 0.5)");
+      marsGlow.addColorStop(0, isDraggingMars ? "rgba(251, 146, 60, 0.95)" : (isOpposition ? "rgba(244, 63, 94, 0.85)" : "rgba(244, 63, 94, 0.5)"));
       marsGlow.addColorStop(1, "transparent");
       ctx.fillStyle = marsGlow;
       ctx.beginPath();
       ctx.arc(marsX, marsY, glowR, 0, Math.PI * 2);
       ctx.fill();
+
+      // Vòng tròn định vị tương tác khi đang kéo
+      if (isDraggingMars) {
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.arc(marsX, marsY, marsRadius + 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
 
       const marsBody = ctx.createRadialGradient(marsX - 3, marsY - 3, 2, marsX, marsY, marsRadius);
       marsBody.addColorStop(0, "#fda4af");
@@ -634,7 +655,7 @@
 
       ctx.fillStyle = "#fbcfe8";
       ctx.font = "bold 12px sans-serif";
-      ctx.fillText("Sao Hỏa", marsX + 18, marsY + 4);
+      ctx.fillText(isDraggingMars ? "Sao Hỏa (Đang kéo)" : "Sao Hỏa", marsX + 18, marsY + 4);
 
       // Cập nhật số liệu
       const mu = 132712440018;
@@ -645,7 +666,10 @@
       valDist.innerText = dist_AU.toFixed(3);
       valVMars.innerText = vMars.toFixed(2);
 
-      if (isRetrograde) {
+      if (isDraggingMars) {
+        badgeStatus.innerText = "🖐️ Đang tùy chỉnh vị trí thủ công";
+        badgeStatus.className = "status-tag tag-opp";
+      } else if (isRetrograde) {
         badgeStatus.innerText = "⚡ Đang Nghịch Hành (Retrograde)";
         badgeStatus.className = "status-tag tag-retro";
       } else if (isOpposition) {
@@ -700,6 +724,93 @@
       }
     }
 
+    // ----------------------------------------------------
+    // XỬ LÝ TƯƠNG TÁC KÉO / THẢ SAO HỎA TRÊN QUỸ ĐẠO
+    // ----------------------------------------------------
+    function getCanvasCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function updateMarsFromPointer(pointerX, pointerY) {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const scale = Math.min(canvas.width, canvas.height) / 4.3;
+      const aM = a_Mars * scale;
+      const bM = aM * Math.sqrt(1 - e_Mars * e_Mars);
+      const cM = aM * e_Mars;
+      
+      const centerMarsX = centerX + cM;
+      const centerMarsY = centerY;
+
+      // Tính góc tọa độ cực từ tâm hình học Ellipse
+      const dx = pointerX - centerMarsX;
+      const dy = pointerY - centerMarsY;
+      
+      // Eccentric Anomaly E từ tọa độ Ellipse (x = -a*cos(E), y = -b*sin(E))
+      // Đảo dấu để đồng bộ hướng cận nhật
+      const E = Math.atan2(-dy / bM, -dx / aM);
+      const positiveE = (E + 2 * Math.PI) % (2 * Math.PI);
+
+      // Tính lại Mean Anomaly M = E - e*sin(E)
+      M_Mars = (positiveE - e_Mars * Math.sin(positiveE) + 2 * Math.PI) % (2 * Math.PI);
+    }
+
+    function handlePointerDown(e) {
+      const pos = getCanvasCoords(e);
+      const dist = Math.hypot(pos.x - currentMarsPos.x, pos.y - currentMarsPos.y);
+      if (dist <= marsHitRadius) {
+        isDraggingMars = true;
+        canvas.style.cursor = "grabbing";
+        updateMarsFromPointer(pos.x, pos.y);
+      }
+    }
+
+    function handlePointerMove(e) {
+      const pos = getCanvasCoords(e);
+      if (isDraggingMars) {
+        updateMarsFromPointer(pos.x, pos.y);
+      } else {
+        const dist = Math.hypot(pos.x - currentMarsPos.x, pos.y - currentMarsPos.y);
+        canvas.style.cursor = dist <= marsHitRadius ? "grab" : "default";
+      }
+    }
+
+    function handlePointerUp() {
+      if (isDraggingMars) {
+        isDraggingMars = false;
+        canvas.style.cursor = "default";
+      }
+    }
+
+    // Sự kiện chuột máy tính
+    canvas.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("mousemove", handlePointerMove);
+    window.addEventListener("mouseup", handlePointerUp);
+
+    // Sự kiện màn hình cảm ứng (iPad, Smartboard, Smartphone)
+    canvas.addEventListener("touchstart", (e) => {
+      handlePointerDown(e);
+      if (isDraggingMars) e.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener("touchmove", (e) => {
+      if (isDraggingMars) {
+        handlePointerMove(e);
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    window.addEventListener("touchend", handlePointerUp);
+
+    // ----------------------------------------------------
+    // CÁC SỰ KIỆN ĐIỀU KHIỂN
+    // ----------------------------------------------------
     speedSlider.addEventListener("input", (e) => {
       timeScale = parseFloat(e.target.value);
       speedDisplay.innerText = timeScale.toFixed(1);
