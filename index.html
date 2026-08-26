@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mô Phỏng Thiên Thể: Quỹ Đạo Sao Hỏa & Trái Đất</title>
+  <title>Mô Phỏng Quỹ Đạo Sao Hỏa & Trái Đất - Định Luật Kepler</title>
   <style>
     * {
       box-sizing: border-box;
@@ -62,15 +62,64 @@
       height: 100%;
     }
 
-    /* Bảng điều khiển kính mờ */
+    /* Khung hiệu ứng kính mờ (Glassmorphism) */
     .glass-panel {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 14px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     }
 
+    /* Bảng Thông tin Kết luận bên trái (vùng trống) */
+    .info-card {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      width: 320px;
+      padding: 16px 18px;
+      z-index: 5;
+    }
+    .info-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      padding-bottom: 6px;
+    }
+    .info-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+    .info-list li {
+      position: relative;
+      padding-left: 16px;
+    }
+    .info-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #f43f5e;
+      font-weight: bold;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+    .info-list strong {
+      color: #f8fafc;
+    }
+
+    /* Bảng điều khiển bên phải */
     .control-panel {
       position: absolute;
       top: 18px;
@@ -80,7 +129,7 @@
       font-size: 0.85rem;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 11px;
       z-index: 5;
     }
     .panel-heading {
@@ -90,7 +139,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 6px;
+      padding-bottom: 5px;
     }
     .control-item label {
       display: block;
@@ -124,7 +173,7 @@
     .btn-group {
       display: flex;
       gap: 8px;
-      margin-top: 4px;
+      margin-top: 2px;
     }
     button {
       flex: 1;
@@ -150,7 +199,7 @@
     .metrics {
       background: rgba(2, 6, 23, 0.6);
       border-radius: 8px;
-      padding: 10px;
+      padding: 9px 12px;
       border: 1px solid rgba(255, 255, 255, 0.06);
       font-family: monospace;
       font-size: 0.8rem;
@@ -187,7 +236,7 @@
     }
     canvas#skyCanvas {
       width: 100%;
-      height: 130px;
+      height: 120px;
       background: #020617;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -208,13 +257,27 @@
   <div id="viewport">
     <canvas id="mainCanvas"></canvas>
 
+    <!-- Bảng Kết luận Quỹ đạo (Vùng trống bên trái) -->
+    <div class="info-card glass-panel">
+      <div class="info-title">
+        <span>🪐 Kết Luận Quỹ Đạo Sao Hỏa</span>
+      </div>
+      <ul class="info-list">
+        <li><strong>Dạng quỹ đạo:</strong> Là hình <em>Ellipse</em> rõ nét với bán trục lớn <span style="color:#38bdf8;">a ≈ 1.524 AU</span> (~228 triệu km).</li>
+        <li><strong>Tiêu điểm:</strong> Mặt Trời ngự tại tiêu điểm <span style="color:#fbbf24;">F₁</span>. Tiêu điểm đối xứng <span style="color:#94a3b8;">F₂</span> hoàn toàn trống rỗng trong không gian.</li>
+        <li><strong>Độ lệch tâm (e ≈ 0.0934):</strong> Lớn gấp gần 6 lần Trái Đất, làm khoảng cách Cận nhật (~206.6 tr.km) và Viễn nhật (~249.2 tr.km) chênh lệch rất lớn (~42.6 tr.km).</li>
+        <li><strong>Định luật 2 Kepler:</strong> Tốc độ không đều — di chuyển nhanh nhất ở Cận nhật (~26.5 km/s) và chậm nhất ở Viễn nhật (~22.0 km/s).</li>
+        <li><strong>Chu kỳ & Nghịch hành:</strong> Chu kỳ năm bằng 1.88 năm Trái Đất; chu kỳ giao hội trực đối là ~26 tháng. Khi Trái Đất vượt mặt, Sao Hỏa biểu kiến đi lùi (Nghịch hành).</li>
+      </ul>
+    </div>
+
     <!-- Hộp quan sát biểu kiến từ Trái Đất -->
     <div class="sky-widget glass-panel">
       <div class="sky-widget-header">
         <span>Góc nhìn biểu kiến từ Trái Đất</span>
         <span style="color:#f43f5e; font-size: 0.75rem;">Vệt Nghịch Hành</span>
       </div>
-      <canvas id="skyCanvas" width="260" height="130"></canvas>
+      <canvas id="skyCanvas" width="260" height="120"></canvas>
     </div>
 
     <!-- Bảng điều khiển bên phải -->
@@ -229,10 +292,16 @@
       </div>
 
       <div class="control-item">
-        <label>Độ lệch tâm Sao Hỏa e (<span id="eccDisplay">0.09</span>)</label>
+        <label>Độ lệch tâm Sao Hỏa e (<span id="eccDisplay">0.25</span>)</label>
         <div class="slider-container">
-          <input type="range" id="eccSlider" min="0.0" max="0.4" step="0.01" value="0.09">
+          <input type="range" id="eccSlider" min="0.0" max="0.5" step="0.01" value="0.25">
         </div>
+        <small style="color: #64748b; font-size: 0.7rem;">Thực tế e ≈ 0.09. Tăng e để trực quan hóa tiêu cự.</small>
+      </div>
+
+      <div class="toggle-item">
+        <input type="checkbox" id="chkFocus" checked>
+        <label for="chkFocus" style="cursor:pointer;">Hiện Tiêu điểm 2 (rỗng) & Trục</label>
       </div>
 
       <div class="toggle-item">
@@ -246,7 +315,7 @@
       </div>
 
       <div class="toggle-item">
-        <input type="checkbox" id="chkSweep">
+        <input type="checkbox" id="chkSweep" checked>
         <label for="chkSweep" style="cursor:pointer;">Cung quét diện tích (ĐL 2 Kepler)</label>
       </div>
 
@@ -255,7 +324,7 @@
         <button id="btnReset">Đặt lại</button>
       </div>
 
-      <div class="panel-heading" style="margin-top: 4px;">Dữ liệu Động học</div>
+      <div class="panel-heading" style="margin-top: 3px;">Dữ liệu Động học</div>
       <div class="metrics">
         <div>Khoảng cách: <span id="valDist" style="color:#fff;">0.00</span> AU</div>
         <div>Vận tốc Hỏa: <span id="valVMars" style="color:#fb7185;">0.00</span> km/s</div>
@@ -275,6 +344,7 @@
     const speedDisplay = document.getElementById("speedDisplay");
     const eccSlider = document.getElementById("eccSlider");
     const eccDisplay = document.getElementById("eccDisplay");
+    const chkFocus = document.getElementById("chkFocus");
     const chkEarth = document.getElementById("chkEarth");
     const chkSightline = document.getElementById("chkSightline");
     const chkSweep = document.getElementById("chkSweep");
@@ -288,8 +358,8 @@
     const a_Earth = 1.0;
     const e_Earth = 0.0167;
     const a_Mars = 1.524;
-    let e_Mars = 0.0934;
-    const T_Mars_Ratio = 1.881; // Chu kỳ năm Sao Hỏa so với Trái Đất
+    let e_Mars = 0.25; // Mặc định trực quan
+    const T_Mars_Ratio = 1.881;
 
     let M_Earth = 0;
     let M_Mars = Math.PI * 0.25;
@@ -300,12 +370,11 @@
     const skyTrail = [];
     const stars = [];
 
-    // Khởi tạo nền sao ngẫu nhiên
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < 140; i++) {
       stars.push({
         x: Math.random(),
         y: Math.random(),
-        size: Math.random() * 1.5 + 0.5,
+        size: Math.random() * 1.5 + 0.4,
         alpha: Math.random() * 0.8 + 0.2
       });
     }
@@ -317,7 +386,6 @@
     window.addEventListener("resize", resize);
     resize();
 
-    // Giải phương trình Kepler: M = E - e*sin(E)
     function solveKepler(M, ecc) {
       let E = M;
       for (let i = 0; i < 10; i++) {
@@ -334,7 +402,7 @@
     function render() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Vẽ nền sao lấp lánh
+      // 1. Nền trời sao
       stars.forEach(s => {
         ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
         ctx.beginPath();
@@ -353,11 +421,17 @@
 
       const aM = a_Mars * scale;
       const bM = aM * Math.sqrt(1 - e_Mars * e_Mars);
-      const cM = aM * e_Mars;
+      const cM = aM * e_Mars; // Tiêu cự
 
-      // Mặt Trời là tiêu điểm gốc tại (centerX, centerY)
+      // Mặt Trời tại Tiêu điểm 1 (centerX, centerY)
       const sunX = centerX;
       const sunY = centerY;
+
+      // Tâm hình học Ellipse
+      const centerMarsX = sunX + cM;
+      const centerMarsY = sunY;
+      const f2X = centerMarsX + cM; // Tiêu điểm 2 rỗng
+      const f2Y = sunY;
 
       if (isRunning) {
         const dM = 0.012 * timeScale;
@@ -365,14 +439,14 @@
         M_Mars = (M_Mars + dM / T_Mars_Ratio) % (2 * Math.PI);
       }
 
-      // Vị trí Trái Đất
+      // Tọa độ Trái Đất
       const EE = solveKepler(M_Earth, e_Earth);
       const nuE = 2 * Math.atan2(Math.sqrt(1 + e_Earth) * Math.sin(EE / 2), Math.sqrt(1 - e_Earth) * Math.cos(EE / 2));
       const rE = a_Earth * (1 - e_Earth * Math.cos(EE)) * scale;
       const earthX = sunX - rE * Math.cos(nuE);
       const earthY = sunY - rE * Math.sin(nuE);
 
-      // Vị trí Sao Hỏa
+      // Tọa độ Sao Hỏa
       const EM = solveKepler(M_Mars, e_Mars);
       const nuM = 2 * Math.atan2(Math.sqrt(1 + e_Mars) * Math.sin(EM / 2), Math.sqrt(1 - e_Mars) * Math.cos(EM / 2));
       const rM_AU = a_Mars * (1 - e_Mars * Math.cos(EM));
@@ -380,7 +454,7 @@
       const marsX = sunX - rM * Math.cos(nuM);
       const marsY = sunY - rM * Math.sin(nuM);
 
-      // Tính khoảng cách & góc nhìn từ Trái Đất
+      // Khoảng cách & Góc nhìn
       const dx = marsX - earthX;
       const dy = marsY - earthY;
       const dist_AU = Math.sqrt(dx * dx + dy * dy) / scale;
@@ -390,7 +464,7 @@
         let diff = curAngle - prevAngle;
         if (diff > Math.PI) diff -= 2 * Math.PI;
         if (diff < -Math.PI) diff += 2 * Math.PI;
-        isRetrograde = diff < 0; // Đổi chiều góc quét biểu kiến
+        isRetrograde = diff < 0;
       }
       prevAngle = curAngle;
 
@@ -404,7 +478,37 @@
         if (skyTrail.length > 320) skyTrail.shift();
       }
 
-      // 2. Vẽ Quỹ Đạo
+      // 2. Trục đối xứng & Tiêu điểm thứ 2 rỗng
+      if (chkFocus.checked) {
+        // Trục lớn
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY);
+        ctx.stroke();
+
+        // Tâm hình học Ellipse
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
+        ctx.beginPath();
+        ctx.arc(centerMarsX, centerMarsY, 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = "rgba(148, 163, 184, 0.5)";
+        ctx.font = "10px sans-serif";
+        ctx.fillText("Tâm O", centerMarsX - 15, centerMarsY - 8);
+
+        // Tiêu điểm 2 (F2 rỗng)
+        ctx.strokeStyle = "#94a3b8";
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.arc(f2X, f2Y, 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px sans-serif";
+        ctx.fillText("Tiêu điểm 2 (F₂ rỗng)", f2X - 50, f2Y - 12);
+      }
+
+      // 3. Quỹ đạo Trái Đất
       if (chkEarth.checked) {
         ctx.beginPath();
         ctx.ellipse(sunX + cE, sunY, aE, bE, 0, 0, Math.PI * 2);
@@ -413,13 +517,14 @@
         ctx.stroke();
       }
 
+      // 4. Quỹ đạo Sao Hỏa
       ctx.beginPath();
-      ctx.ellipse(sunX + cM, sunY, aM, bM, 0, 0, Math.PI * 2);
+      ctx.ellipse(centerMarsX, centerMarsY, aM, bM, 0, 0, Math.PI * 2);
       ctx.strokeStyle = "rgba(244, 63, 94, 0.35)";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 3. Cung quét Kepler 2
+      // 5. Cung quét diện tích (Định luật 2 Kepler)
       if (chkSweep.checked) {
         ctx.fillStyle = "rgba(244, 63, 94, 0.15)";
         ctx.beginPath();
@@ -435,7 +540,7 @@
         ctx.fill();
       }
 
-      // 4. Đường ngắm (Sightlines)
+      // 6. Đường ngắm (Sightlines)
       if (chkSightline.checked && chkEarth.checked) {
         sightlines.forEach((l, idx) => {
           ctx.beginPath();
@@ -457,7 +562,7 @@
         ctx.setLineDash([]);
       }
 
-      // 5. MẶT TRỜI
+      // 7. MẶT TRỜI (Tiêu điểm 1 - F1)
       const sunGlow = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 32);
       sunGlow.addColorStop(0, "#fbbf24");
       sunGlow.addColorStop(0.5, "#f59e0b");
@@ -472,7 +577,11 @@
       ctx.arc(sunX, sunY, 11, 0, Math.PI * 2);
       ctx.fill();
 
-      // 6. TRÁI ĐẤT
+      ctx.fillStyle = "#fef08a";
+      ctx.font = "11px sans-serif";
+      ctx.fillText("Mặt Trời (F₁)", sunX - 32, sunY + 24);
+
+      // 8. TRÁI ĐẤT
       if (chkEarth.checked) {
         const earthGlow = ctx.createRadialGradient(earthX, earthY, 4, earthX, earthY, 18);
         earthGlow.addColorStop(0, "rgba(56, 189, 248, 0.6)");
@@ -496,8 +605,8 @@
         ctx.fillText("Trái Đất", earthX + 14, earthY + 4);
       }
 
-      // 7. SAO HỎA (Thiết kế lớn, rực rỡ và sắc nét)
-      const marsRadius = 13; // Kích thước to hơn
+      // 9. SAO HỎA
+      const marsRadius = 13;
       const glowR = isOpposition ? 32 : 24;
       const marsGlow = ctx.createRadialGradient(marsX, marsY, 6, marsX, marsY, glowR);
       marsGlow.addColorStop(0, isOpposition ? "rgba(244, 63, 94, 0.85)" : "rgba(244, 63, 94, 0.5)");
@@ -527,7 +636,7 @@
       ctx.font = "bold 12px sans-serif";
       ctx.fillText("Sao Hỏa", marsX + 18, marsY + 4);
 
-      // Cập nhật số liệu & trạng thái
+      // Cập nhật số liệu
       const mu = 132712440018;
       const rM_km = rM_AU * 149597870.7;
       const aM_km = a_Mars * 149597870.7;
