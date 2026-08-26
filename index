@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Quỹ Đạo Ellipse Sao Hỏa - Định Luật Kepler</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0b0e14;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      padding: 12px 20px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .badge {
+      background: #ef4444;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .control-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 16px;
+      width: 280px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      font-size: 0.85rem;
+    }
+    .control-group {
+      margin-bottom: 12px;
+    }
+    .control-group label {
+      display: block;
+      margin-bottom: 4px;
+      color: #94a3b8;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: #ef4444;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    button {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #334155;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #475569;
+    }
+    button.primary {
+      background: #ef4444;
+    }
+    button.primary:hover {
+      background: #dc2626;
+    }
+    .telemetry {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 10px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <span>Mô Hình Động Học Thiên Thể</span>
+      <span class="badge">Kepler's Laws</span>
+    </div>
+    <div style="font-size: 0.85rem; color: #94a3b8;">Quỹ đạo Ellipse của Sao Hỏa quanh Mặt Trời</div>
+  </header>
+
+  <div id="canvas-container">
+    <canvas id="simCanvas"></canvas>
+
+    <div class="control-panel">
+      <div class="control-group">
+        <label>Tốc độ mô phỏng (<span id="speedVal">1.0</span>x)</label>
+        <div class="slider-row">
+          <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Độ lệch tâm trực quan e (<span id="eccVal">0.25</span>)</label>
+        <div class="slider-row">
+          <input type="range" id="eccSlider" min="0.0" max="0.6" step="0.01" value="0.25">
+        </div>
+        <small style="color: #64748b; font-size: 0.7rem;">Thực tế e ≈ 0.0934. Tăng e để thấy rõ tính chất Ellipse.</small>
+      </div>
+
+      <div class="control-group checkbox-row">
+        <input type="checkbox" id="showSweep" checked>
+        <label for="showSweep" style="margin:0; color:#e2e8f0; cursor:pointer;">Hiện cung quét diện tích (Định luật 2)</label>
+      </div>
+
+      <div class="control-group checkbox-row">
+        <input type="checkbox" id="showGrid" checked>
+        <label for="showGrid" style="margin:0; color:#e2e8f0; cursor:pointer;">Hiện trục & tiêu điểm rỗng</label>
+      </div>
+
+      <div class="btn-row">
+        <button id="pauseBtn" class="primary">Tạm dừng</button>
+        <button id="resetBtn">Đặt lại</button>
+      </div>
+
+      <div class="telemetry">
+        <div>Khoảng cách r: <span id="telR">0.00</span> AU</div>
+        <div>Vận tốc v: <span id="telV">0.00</span> km/s</div>
+        <div>Góc vị trí ν: <span id="telNu">0.0</span>°</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // UI elements
+    const speedSlider = document.getElementById("speedSlider");
+    const speedVal = document.getElementById("speedVal");
+    const eccSlider = document.getElementById("eccSlider");
+    const eccVal = document.getElementById("eccVal");
+    const showSweep = document.getElementById("showSweep");
+    const showGrid = document.getElementById("showGrid");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const telR = document.getElementById("telR");
+    const telV = document.getElementById("telV");
+    const telNu = document.getElementById("telNu");
+
+    // Thông số vật lý / mô phỏng
+    let a_AU = 1.524;            // Bán trục lớn Sao Hỏa (AU)
+    let e = 0.25;                // Mặc định phóng đại nhẹ e để quan sát trực quan
+    let meanAnomaly = 0;         // Góc trung bình M (rad)
+    let isRunning = true;
+    let timeScale = 1.0;
+    const trail = [];
+    const MAX_TRAIL = 180;
+
+    // Responsive Canvas
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Giải phương trình Kepler: M = E - e*sin(E) bằng phương pháp lặp Newton-Raphson
+    function solveKepler(M, ecc) {
+      let E = M;
+      for (let i = 0; i < 10; i++) {
+        let delta = (E - ecc * Math.sin(E) - M) / (1 - ecc * Math.cos(E));
+        E -= delta;
+        if (Math.abs(delta) < 1e-6) break;
+      }
+      return E;
+    }
+
+    // Vòng lặp mô phỏng & vẽ Canvas
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      
+      // Tỷ lệ pixel / AU
+      const scale = Math.min(canvas.width, canvas.height) / 3.8;
+      const a = a_AU * scale;
+      const b = a * Math.sqrt(1 - e * e);
+      const c = a * e; // Khoảng cách từ tâm ellipse đến tiêu điểm
+
+      // Đặt Mặt Trời tại Tiêu điểm 1 (gốc tọa độ hiển thị)
+      // Tâm của ellipse sẽ nằm tại (centerX + c, centerY) để Tiêu điểm 1 nằm tại (centerX, centerY)
+      const ellipseCenterX = centerX + c;
+      const ellipseCenterY = centerY;
+
+      // Cập nhật góc M theo thời gian (Kepler's 2nd Law)
+      if (isRunning) {
+        const dM = 0.015 * timeScale;
+        meanAnomaly = (meanAnomaly + dM) % (2 * Math.PI);
+      }
+
+      // Tính Eccentric Anomaly (E) và True Anomaly (nu)
+      const E = solveKepler(meanAnomaly, e);
+      const nu = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+      
+      // Bán kính khoảng cách r theo AU
+      const r_current_AU = a_AU * (1 - e * Math.cos(E));
+      const r_pixels = r_current_AU * scale;
+
+      // Vị trí Sao Hỏa theo tọa độ cực từ Mặt Trời (gốc là centerX, centerY)
+      // Góc 0 ứng với Cận nhật (nằm bên trái nếu xét c hướng dương)
+      const marsX = centerX - r_pixels * Math.cos(nu);
+      const marsY = centerY - r_pixels * Math.sin(nu);
+
+      // Lưu quỹ tích (trail)
+      if (isRunning) {
+        trail.push({ x: marsX, y: marsY });
+        if (trail.length > MAX_TRAIL) trail.shift();
+      }
+
+      // 1. Vẽ lưới tọa độ & Tiêu điểm rỗng
+      if (showGrid.checked) {
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY);
+        ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height);
+        ctx.stroke();
+
+        // Tiêu điểm thứ 2 (rỗng)
+        const f2X = ellipseCenterX + c;
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(f2X, centerY, 5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(148, 163, 184, 0.6)";
+        ctx.fillText("Tiêu điểm 2 (rỗng)", f2X - 45, centerY - 12);
+      }
+
+      // 2. Vẽ đường quỹ đạo Ellipse hoàn chỉnh
+      ctx.beginPath();
+      ctx.ellipse(ellipseCenterX, ellipseCenterY, a, b, 0, 0, 2 * Math.PI);
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.35)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 3. Vẽ quạt quét diện tích (Bán kính vectơ quét)
+      if (showSweep.checked) {
+        ctx.fillStyle = "rgba(239, 68, 68, 0.12)";
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        const steps = 30;
+        const startM = (meanAnomaly - 0.35 + 2 * Math.PI) % (2 * Math.PI);
+        for (let i = 0; i <= steps; i++) {
+          let curM = startM + (0.35 / steps) * i;
+          let curE = solveKepler(curM, e);
+          let curNu = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(curE / 2), Math.sqrt(1 - e) * Math.cos(curE / 2));
+          let curR = a_AU * (1 - e * Math.cos(curE)) * scale;
+          let px = centerX - curR * Math.cos(curNu);
+          let py = centerY - curR * Math.sin(curNu);
+          ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // 4. Vẽ vệt chuyển động (Tail)
+      if (trail.length > 1) {
+        for (let i = 0; i < trail.length - 1; i++) {
+          ctx.beginPath();
+          ctx.moveTo(trail[i].x, trail[i].y);
+          ctx.lineTo(trail[i + 1].x, trail[i + 1].y);
+          ctx.strokeStyle = `rgba(239, 68, 68, ${i / trail.length})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+      }
+
+      // 5. Bán kính vectơ nối Mặt Trời -> Sao Hỏa
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(marsX, marsY);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 6. Vẽ Mặt Trời (Tiêu điểm chính)
+      const sunGlow = ctx.createRadialGradient(centerX, centerY, 2, centerX, centerY, 25);
+      sunGlow.addColorStop(0, "#fbbf24");
+      sunGlow.addColorStop(0.4, "#f59e0b");
+      sunGlow.addColorStop(1, "transparent");
+      ctx.fillStyle = sunGlow;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#fffbeb";
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fef3c7";
+      ctx.font = "11px sans-serif";
+      ctx.fillText("Mặt Trời (Tiêu điểm)", centerX - 45, centerY + 24);
+
+      // 7. Vẽ Sao Hỏa
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.arc(marsX, marsY, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#fca5a5";
+      ctx.beginPath();
+      ctx.arc(marsX - 2, marsY - 2, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillText("Sao Hỏa", marsX + 10, marsY + 4);
+
+      // Cập nhật thông số tức thời (Vis-viva equation: v = sqrt(mu * (2/r - 1/a)))
+      const mu = 132712440018; // km^3/s^2 (G * M_Sun)
+      const r_km = r_current_AU * 149597870.7;
+      const a_km = a_AU * 149597870.7;
+      const v_kms = Math.sqrt(mu * (2 / r_km - 1 / a_km));
+
+      telR.innerText = r_current_AU.toFixed(3);
+      telV.innerText = v_kms.toFixed(2);
+      let degNu = ((nu * 180 / Math.PI) + 360) % 360;
+      telNu.innerText = degNu.toFixed(1);
+
+      requestAnimationFrame(animate);
+    }
+
+    // Sự kiện điều khiển
+    speedSlider.addEventListener("input", (e) => {
+      timeScale = parseFloat(e.target.value);
+      speedVal.innerText = timeScale.toFixed(1);
+    });
+
+    eccSlider.addEventListener("input", (e) => {
+      e = parseFloat(e.target.value);
+      eccVal.innerText = e.toFixed(2);
+      trail.length = 0;
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      isRunning = !isRunning;
+      pauseBtn.innerText = isRunning ? "Tạm dừng" : "Tiếp tục";
+      pauseBtn.className = isRunning ? "primary" : "";
+    });
+
+    resetBtn.addEventListener("click", () => {
+      meanAnomaly = 0;
+      trail.length = 0;
+    });
+
+    // Bắt đầu vòng lặp
+    animate();
+  </script>
+</body>
+</html>
