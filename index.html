@@ -8,47 +8,54 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --clr-bg:        #030712;
-      --clr-surface:   rgba(15,23,42,0.92);
-      --clr-border:    rgba(255,255,255,0.10);
-      --clr-sun:       #fbbf24;
-      --clr-mars:      #f43f5e;
-      --clr-earth:     #38bdf8;
-      --clr-text:      #f8fafc;
-      --clr-muted:     #94a3b8;
-      --clr-green:     #4ade80;
-      --radius-card:   14px;
-      --blur:          blur(16px);
+      --clr-bg:      #030712;
+      --clr-surface: rgba(15,23,42,0.95);
+      --clr-border:  rgba(255,255,255,0.10);
+      --clr-sun:     #fbbf24;
+      --clr-mars:    #f43f5e;
+      --clr-earth:   #38bdf8;
+      --clr-text:    #f8fafc;
+      --clr-muted:   #94a3b8;
+      --clr-green:   #4ade80;
+      --blur:        blur(16px);
+      --r:           14px;
     }
 
-    body {
+    html, body {
+      height: 100%;
+      overflow: hidden;
       background: var(--clr-bg);
       color: var(--clr-text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ═══════════════════════════════════════
+       LAYOUT: flex column toàn màn hình
+    ═══════════════════════════════════════ */
+    #app {
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      user-select: none;
+      height: 100%;
     }
 
     /* ── HEADER ── */
     header {
-      padding: 10px 20px;
+      flex-shrink: 0;
+      padding: 8px 16px;
       background: var(--clr-surface);
       backdrop-filter: var(--blur);
       border-bottom: 1px solid var(--clr-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      z-index: 20;
-      flex-shrink: 0;
+      z-index: 100;
     }
-    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     h1 {
-      font-size: 1.05rem;
+      font-size: clamp(0.8rem, 3vw, 1rem);
       font-weight: 700;
-      background: linear-gradient(135deg, #f43f5e, #fb923c, #38bdf8);
+      background: linear-gradient(135deg,#f43f5e,#fb923c,#38bdf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -57,248 +64,446 @@
       background: rgba(244,63,94,0.15);
       color: #fb7185;
       border: 1px solid rgba(244,63,94,0.3);
-      padding: 2px 10px;
+      padding: 2px 8px;
       border-radius: 999px;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 600;
     }
-    .header-sub { font-size: 0.8rem; color: var(--clr-muted); }
+    .header-sub { font-size: 0.72rem; color: var(--clr-muted); }
 
-    /* ── VIEWPORT ── */
+    /* ── VIEWPORT (canvas khu vực) ── */
     #viewport {
       flex: 1;
       position: relative;
       overflow: hidden;
+      min-height: 0; /* quan trọng cho flex */
     }
+
     canvas#mainCanvas {
       display: block;
       width: 100%;
       height: 100%;
+      touch-action: none;
       cursor: default;
-      touch-action: none;  /* ← ngăn scroll khi kéo trên mobile */
     }
 
-    /* ── GLASSMORPHISM CARD ── */
+    /* ── GLASS PANEL chung ── */
     .glass-panel {
       background: var(--clr-surface);
       backdrop-filter: var(--blur);
       border: 1px solid var(--clr-border);
-      border-radius: var(--radius-card);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+      border-radius: var(--r);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
     }
 
-    /* ── LEFT PANEL ── */
+    /* ── TOOLTIP ── */
+    #tooltip {
+      position: absolute;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.72rem;
+      color: var(--clr-text);
+      pointer-events: none;
+      z-index: 200;
+      display: none;
+      max-width: 170px;
+      line-height: 1.5;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
+    /* ═══════════════════════════════════════
+       DESKTOP: panels nổi trên canvas (như cũ)
+    ═══════════════════════════════════════ */
+
+    /* LEFT PANEL */
     .left-container {
       position: absolute;
-      top: 14px;
-      left: 14px;
-      width: 320px;
-      z-index: 10;
+      top: 14px; left: 14px;
+      width: 300px;
+      z-index: 50;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      /* Tự cuộn nếu màn hình nhỏ */
-      max-height: calc(100vh - 80px);
+      max-height: calc(100% - 28px);
       overflow-y: auto;
       scrollbar-width: thin;
     }
     .left-container::-webkit-scrollbar { width: 4px; }
-    .left-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+    .left-container::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15); border-radius: 4px;
+    }
 
-    /* Tab Bar */
-    .tab-bar {
+    /* RIGHT PANEL */
+    .control-panel {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 275px;
+      padding: 14px;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      z-index: 50;
+      max-height: calc(100% - 28px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    .control-panel::-webkit-scrollbar { width: 4px; }
+    .control-panel::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15); border-radius: 4px;
+    }
+
+    /* SKY WIDGET */
+    .sky-widget {
+      position: absolute;
+      bottom: 14px; left: 14px;
+      padding: 11px;
+      width: 260px;
+      z-index: 50;
+    }
+
+    /* LEGEND */
+    .legend {
+      position: absolute;
+      bottom: 14px; right: 14px;
+      z-index: 50;
+      padding: 9px 13px;
+      font-size: 0.7rem;
+      color: #cbd5e1;
+      line-height: 1.9;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════
+       MOBILE UI ELEMENTS (ẩn trên desktop)
+    ═══════════════════════════════════════ */
+
+    /* Floating Action Bar ở dưới canvas */
+    .mobile-fab-bar {
+      display: none; /* hiện trên mobile */
+    }
+
+    /* Bottom Sheet Overlay */
+    .bottom-sheet-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 300;
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .bottom-sheet-overlay.open { opacity: 1; }
+
+    /* Bottom Sheet */
+    .bottom-sheet {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 400;
+      background: rgba(10,17,35,0.98);
+      border-top: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px 20px 0 0;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+      scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
+    }
+    .bottom-sheet::-webkit-scrollbar { width: 4px; }
+    .bottom-sheet::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15); border-radius:4px;
+    }
+    .bottom-sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 40px; height: 4px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 2px;
+      margin: 12px auto 6px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 18px 12px;
+      border-bottom: 1px solid var(--clr-border);
+      position: sticky;
+      top: 0;
+      background: rgba(10,17,35,0.98);
+      z-index: 1;
+    }
+    .sheet-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--clr-text);
+    }
+    .sheet-close {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: var(--clr-text);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .sheet-close:hover { background: rgba(255,255,255,0.2); }
+
+    .sheet-body { padding: 14px 16px 24px; }
+
+    /* Mobile tab bar bên trong sheet */
+    .sheet-tab-bar {
       display: flex;
       gap: 5px;
-      background: rgba(15,23,42,0.98);
+      background: rgba(2,6,23,0.8);
       padding: 5px;
       border-radius: 10px;
       border: 1px solid var(--clr-border);
+      margin-bottom: 12px;
     }
-    .tab-btn {
+    .sheet-tab-btn {
       flex: 1;
-      padding: 7px 6px;
+      padding: 8px 4px;
       border: none;
       border-radius: 7px;
       background: transparent;
       color: var(--clr-muted);
-      font-size: 0.76rem;
+      font-size: 0.72rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      transition: all 0.2s;
       text-align: center;
+    }
+    .sheet-tab-btn:hover { color: var(--clr-text); background: rgba(255,255,255,0.05); }
+    .sheet-tab-btn.active {
+      background: linear-gradient(135deg,#0284c7,#0369a1);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(2,132,199,0.4);
+    }
+    .sheet-tab-btn.active.elip-mode {
+      background: linear-gradient(135deg,#f43f5e,#be123c);
+      box-shadow: 0 2px 8px rgba(244,63,94,0.4);
+    }
+
+    /* Mini metrics bar (luôn hiện trên mobile, không che canvas) */
+    .mini-metrics {
+      display: none; /* hiện trên mobile */
+      position: absolute;
+      top: 8px; right: 8px;
+      background: rgba(10,17,35,0.88);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 0.68rem;
+      font-family: monospace;
+      z-index: 50;
+      line-height: 1.7;
+      backdrop-filter: blur(8px);
+    }
+    .mini-metrics .metric-row { display: flex; gap: 5px; }
+    .mini-metrics .metric-label { color: var(--clr-muted); }
+    .mini-metrics .metric-val { color: var(--clr-text); font-weight: 700; }
+
+    /* Mini pause/speed controls góc trái trên (mobile) */
+    .mini-controls {
+      display: none; /* hiện trên mobile */
+      position: absolute;
+      top: 8px; left: 8px;
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .mini-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(15,23,42,0.9);
+      backdrop-filter: blur(8px);
+      color: var(--clr-text);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .mini-btn:active { transform: scale(0.9); }
+    .mini-btn.primary { background: rgba(244,63,94,0.7); border-color: #f43f5e; }
+
+    /* Speed indicator mobile */
+    .speed-chip {
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 3px 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--clr-text);
+      text-align: center;
+    }
+
+    /* FAB bar: thanh nút dưới cùng mobile */
+    .mobile-fab-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none; /* flex trên mobile */
+      gap: 8px;
+      z-index: 60;
+      background: rgba(10,17,35,0.92);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 7px 14px;
+      backdrop-filter: blur(12px);
+    }
+    .fab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: none;
+      background: transparent;
+      color: var(--clr-muted);
+      font-size: 0.6rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 50px;
+    }
+    .fab-btn .fab-icon { font-size: 1.1rem; line-height: 1; }
+    .fab-btn:hover, .fab-btn.active {
+      color: var(--clr-text);
+      background: rgba(255,255,255,0.08);
+    }
+    .fab-btn.active { color: var(--clr-mars); }
+
+    /* Status badge mobile */
+    .mobile-status {
+      display: none; /* hiện mobile */
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 55;
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════
+       SHARED COMPONENT STYLES
+    ═══════════════════════════════════════ */
+
+    /* Tab bar desktop */
+    .tab-bar {
+      display: flex; gap: 5px;
+      background: rgba(15,23,42,0.98);
+      padding: 5px; border-radius: 10px;
+      border: 1px solid var(--clr-border);
+    }
+    .tab-btn {
+      flex: 1; padding: 7px 5px;
+      border: none; border-radius: 7px;
+      background: transparent; color: var(--clr-muted);
+      font-size: 0.72rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; text-align: center;
     }
     .tab-btn:hover { color: var(--clr-text); background: rgba(255,255,255,0.06); }
     .tab-btn.active {
       background: linear-gradient(135deg,#0284c7,#0369a1);
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(2,132,199,0.4);
+      color: #fff; box-shadow: 0 2px 8px rgba(2,132,199,0.4);
     }
     .tab-btn.active.elip-mode {
       background: linear-gradient(135deg,#f43f5e,#be123c);
       box-shadow: 0 2px 8px rgba(244,63,94,0.4);
     }
 
-    /* Info Card */
-    .info-card { padding: 14px 16px; }
+    .info-card { padding: 12px 14px; }
     .info-title {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--clr-earth);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      border-bottom: 1px solid rgba(56,189,248,0.2);
-      padding-bottom: 6px;
+      font-size: 0.78rem; font-weight: 700; color: var(--clr-earth);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 9px; display: flex; align-items: center; gap: 5px;
+      border-bottom: 1px solid rgba(56,189,248,0.2); padding-bottom: 5px;
     }
 
-    /* Math formula box */
     .math-formula {
-      background: rgba(2,6,23,0.7);
-      border: 1px solid rgba(244,63,94,0.35);
-      border-radius: 8px;
-      padding: 10px 12px;
-      text-align: center;
-      margin-bottom: 10px;
+      background: rgba(2,6,23,0.7); border: 1px solid rgba(244,63,94,0.35);
+      border-radius: 8px; padding: 9px 11px; text-align: center; margin-bottom: 9px;
     }
     .math-formula .formula-main {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #fb7185;
+      font-size: 1rem; font-weight: 700; color: #fb7185;
       font-family: "Times New Roman", Times, serif;
     }
     .math-calc {
-      font-family: monospace;
-      font-size: 0.82rem;
-      color: var(--clr-earth);
-      margin-top: 6px;
-      line-height: 1.6;
+      font-family: monospace; font-size: 0.8rem; color: var(--clr-earth);
+      margin-top: 5px; line-height: 1.6;
     }
     .calc-row {
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px dashed rgba(255,255,255,0.1);
-      padding: 3px 0;
+      display: flex; justify-content: space-between;
+      border-bottom: 1px dashed rgba(255,255,255,0.1); padding: 3px 0;
     }
     .calc-row.total {
-      border-bottom: none;
-      border-top: 1px solid rgba(255,255,255,0.2);
-      margin-top: 4px;
-      padding-top: 5px;
-      font-weight: 700;
-      color: var(--clr-green);
-      font-size: 0.88rem;
+      border-bottom: none; border-top: 1px solid rgba(255,255,255,0.2);
+      margin-top: 4px; padding-top: 5px; font-weight: 700;
+      color: var(--clr-green); font-size: 0.85rem;
     }
 
-    /* Kepler Laws Tabs (Tab thứ 3 mới) */
     .info-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-      font-size: 0.8rem;
-      line-height: 1.5;
-      color: #cbd5e1;
+      list-style: none; display: flex; flex-direction: column;
+      gap: 8px; font-size: 0.78rem; line-height: 1.5; color: #cbd5e1;
     }
-    .info-list li {
-      position: relative;
-      padding-left: 14px;
-    }
+    .info-list li { position: relative; padding-left: 13px; }
     .info-list li::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: var(--clr-mars);
-      font-weight: bold;
+      content: "•"; position: absolute; left: 0;
+      color: var(--clr-mars); font-weight: bold;
     }
     .info-list strong { color: var(--clr-text); }
 
-    /* Kepler card: 3 định luật */
     .kepler-law {
-      background: rgba(2,6,23,0.6);
-      border-left: 3px solid var(--clr-earth);
-      border-radius: 0 6px 6px 0;
-      padding: 7px 10px;
-      margin-bottom: 7px;
-      font-size: 0.78rem;
-      line-height: 1.5;
-      color: #cbd5e1;
+      background: rgba(2,6,23,0.6); border-left: 3px solid var(--clr-earth);
+      border-radius: 0 6px 6px 0; padding: 7px 10px; margin-bottom: 7px;
+      font-size: 0.76rem; line-height: 1.5; color: #cbd5e1;
     }
     .kepler-law:nth-child(2) { border-left-color: var(--clr-sun); }
     .kepler-law:nth-child(3) { border-left-color: var(--clr-green); }
-    .kepler-law .law-title {
-      font-weight: 700;
-      font-size: 0.8rem;
-      color: var(--clr-text);
-      margin-bottom: 3px;
-    }
-
-    /* ── RIGHT CONTROL PANEL ── */
-    .control-panel {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      padding: 16px;
-      width: 295px;
-      font-size: 0.83rem;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 10;
-      max-height: calc(100vh - 80px);
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-    .control-panel::-webkit-scrollbar { width: 4px; }
-    .control-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+    .kepler-law .law-title { font-weight: 700; font-size: 0.78rem; color: var(--clr-text); margin-bottom: 3px; }
 
     .panel-heading {
-      font-weight: 700;
-      color: var(--clr-muted);
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      padding-bottom: 5px;
+      font-weight: 700; color: var(--clr-muted); font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 5px;
     }
     .control-item label { display: block; margin-bottom: 4px; color: #cbd5e1; }
     .slider-container { display: flex; align-items: center; gap: 8px; }
     input[type="range"] { flex: 1; accent-color: var(--clr-mars); cursor: pointer; height: 4px; }
-    .val-badge {
-      min-width: 38px;
-      text-align: right;
-      font-weight: 700;
-      color: var(--clr-text);
-      font-size: 0.8rem;
-    }
+    .val-badge { min-width: 36px; text-align: right; font-weight: 700; color: var(--clr-text); font-size: 0.78rem; }
 
     .toggle-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      color: #e2e8f0;
-      padding: 3px 0;
-      border-radius: 4px;
-      transition: background 0.15s;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; color: #e2e8f0; padding: 4px 0;
+      border-radius: 4px; transition: background 0.15s; font-size: 0.8rem;
     }
-    .toggle-item:hover { background: rgba(255,255,255,0.04); padding-left: 4px; }
+    .toggle-item:hover { background: rgba(255,255,255,0.04); padding-left: 3px; }
     .toggle-item input { accent-color: var(--clr-mars); width: 15px; height: 15px; cursor: pointer; }
 
     .btn-group { display: flex; gap: 8px; }
     button.ctrl-btn {
-      flex: 1;
-      padding: 8px 10px;
-      border: none;
-      border-radius: 8px;
-      background: #334155;
-      color: #fff;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.78rem;
-      transition: background 0.2s, transform 0.1s;
+      flex: 1; padding: 8px 10px; border: none; border-radius: 8px;
+      background: #334155; color: #fff; cursor: pointer;
+      font-weight: 600; font-size: 0.76rem; transition: all 0.2s;
     }
     button.ctrl-btn:hover { background: #475569; }
     button.ctrl-btn:active { transform: scale(0.97); }
@@ -306,330 +511,386 @@
       background: linear-gradient(135deg,#f43f5e,#e11d48);
       box-shadow: 0 3px 12px rgba(244,63,94,0.3);
     }
-    button.btn-primary:hover { background: linear-gradient(135deg,#fb7185,#f43f5e); }
 
-    /* Metrics */
     .metrics {
-      background: rgba(2,6,23,0.65);
-      border-radius: 8px;
-      padding: 9px 12px;
-      border: 1px solid rgba(255,255,255,0.07);
-      font-family: monospace;
-      font-size: 0.78rem;
-      line-height: 1.7;
+      background: rgba(2,6,23,0.65); border-radius: 8px; padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,0.07); font-family: monospace;
+      font-size: 0.76rem; line-height: 1.7;
     }
     .metric-row { display: flex; justify-content: space-between; }
     .metric-label { color: var(--clr-muted); }
     .metric-val { color: var(--clr-text); font-weight: 700; }
 
     .status-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.72rem;
-      margin-top: 4px;
+      display: inline-block; padding: 2px 8px; border-radius: 6px;
+      font-weight: 700; font-size: 0.7rem; margin-top: 3px;
     }
     .tag-pro   { background: rgba(56,189,248,0.15); color: #38bdf8; }
     .tag-opp   { background: rgba(251,191,36,0.2);  color: #fbbf24; border: 1px solid #fbbf24; }
     .tag-retro { background: rgba(244,63,94,0.2);   color: #fb7185; border: 1px solid #fb7185; }
     .tag-drag  { background: rgba(251,146,60,0.2);  color: #fb923c; border: 1px solid #fb923c; }
 
-    /* ── SKY WIDGET ── */
-    .sky-widget {
-      position: absolute;
-      bottom: 16px;
-      left: 14px;
-      padding: 12px;
-      width: 280px;
-      z-index: 10;
-    }
     .sky-widget-header {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #cbd5e1;
-      margin-bottom: 7px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      font-size: 0.76rem; font-weight: 600; color: #cbd5e1;
+      margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
     }
-    .sky-label-retro { color: var(--clr-mars); font-size: 0.7rem; }
     canvas#skyCanvas {
-      width: 100%;
-      height: 110px;
-      background: #020617;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
-      display: block;
+      width: 100%; height: 100px;
+      background: #020617; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1); display: block;
     }
 
-    /* ── TOOLTIP POPUP ── */
-    #tooltip {
-      position: absolute;
-      background: rgba(15,23,42,0.95);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 0.75rem;
-      color: var(--clr-text);
-      pointer-events: none;
-      z-index: 30;
-      display: none;
-      max-width: 180px;
-      line-height: 1.5;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    }
+    /* ═══════════════════════════════════════
+       MOBILE BREAKPOINT
+    ═══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      /* Ẩn hoàn toàn desktop panels */
+      .left-container,
+      .control-panel,
+      .sky-widget,
+      .legend { display: none !important; }
 
-    /* ── LEGEND BOTTOM-RIGHT ── */
-    .legend {
-      position: absolute;
-      bottom: 16px;
-      right: 14px;
-      z-index: 10;
-      padding: 10px 14px;
-      font-size: 0.72rem;
-      color: #cbd5e1;
-      line-height: 2;
-    }
-    .legend-item { display: flex; align-items: center; gap: 7px; }
-    .legend-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ── RESPONSIVE: ẩn panel phụ khi màn hình quá nhỏ ── */
-    @media (max-width: 700px) {
-      .left-container { width: 220px; }
-      .control-panel  { width: 210px; font-size: 0.75rem; }
-      .sky-widget     { width: 220px; }
-      .legend         { display: none; }
-      h1              { font-size: 0.9rem; }
-    }
-    @media (max-width: 480px) {
-      .control-panel { display: none; } /* Ẩn hẳn trên điện thoại nhỏ, giữ canvas sạch */
+      /* Hiện mobile UI */
+      .mini-metrics   { display: block; }
+      .mini-controls  { display: flex; }
+      .mobile-fab-bar { display: flex; }
+      .mobile-status  { display: block; }
     }
   </style>
 </head>
 <body>
+<div id="app">
 
-<header>
-  <div class="brand">
-    <h1>🪐 Hệ Quỹ Đạo Nhật Tâm: Trái Đất &amp; Sao Hỏa</h1>
-    <span class="badge">Kepler &amp; Conics</span>
-  </div>
-  <span class="header-sub">Định Nghĩa Elip &amp; Chuyển Động Thiên Thể</span>
-</header>
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <h1>🪐 Hệ Quỹ Đạo Nhật Tâm: Trái Đất &amp; Sao Hỏa</h1>
+      <span class="badge">Kepler</span>
+    </div>
+    <span class="header-sub" id="headerSub">Elip &amp; Thiên Thể</span>
+  </header>
 
-<div id="viewport">
-  <canvas id="mainCanvas"></canvas>
+  <!-- VIEWPORT -->
+  <div id="viewport">
+    <canvas id="mainCanvas"></canvas>
+    <div id="tooltip"></div>
 
-  <!-- Tooltip động -->
-  <div id="tooltip"></div>
+    <!-- ══════════════════════════════
+         DESKTOP UI (> 768px)
+    ══════════════════════════════ -->
 
-  <!-- ── LEFT PANEL ── -->
-  <div class="left-container">
-    <div class="tab-bar" role="tablist">
-      <button id="btnTabElip" class="tab-btn active elip-mode" role="tab" aria-selected="true">📐 Định nghĩa Elip</button>
-      <button id="btnTabDesc" class="tab-btn" role="tab" aria-selected="false">🪐 Quỹ đạo</button>
-      <button id="btnTabKepler" class="tab-btn" role="tab" aria-selected="false">⚖️ Định luật</button>
+    <!-- Left Panel -->
+    <div class="left-container">
+      <div class="tab-bar">
+        <button id="btnTabElip"   class="tab-btn active elip-mode">📐 Định nghĩa</button>
+        <button id="btnTabDesc"   class="tab-btn">🪐 Quỹ đạo</button>
+        <button id="btnTabKepler" class="tab-btn">⚖️ Định luật</button>
+      </div>
+      <div id="panelElip" class="info-card glass-panel">
+        <div class="info-title" style="color:#fb7185;border-color:rgba(251,113,133,0.3);">
+          <span>📐 Định Nghĩa Hình Học Elip</span>
+        </div>
+        <div class="math-formula">
+          <div class="formula-main">MF₁ + MF₂ = 2a = hằng số</div>
+          <small style="color:#94a3b8;font-size:0.7rem;">M: Sao Hỏa &nbsp;|&nbsp; F₁: Mặt Trời &nbsp;|&nbsp; F₂: Tiêu điểm rỗng</small>
+        </div>
+        <div class="math-calc">
+          <div class="calc-row"><span>MF₁ (bán kính 1):</span><span id="valMF1" style="color:#fbbf24;font-weight:bold;">—</span></div>
+          <div class="calc-row"><span>MF₂ (bán kính 2):</span><span id="valMF2" style="color:#cbd5e1;font-weight:bold;">—</span></div>
+          <div class="calc-row total"><span>Tổng MF₁ + MF₂:</span><span id="valTotal2a">—</span></div>
+        </div>
+        <p style="margin-top:8px;font-size:0.74rem;color:#cbd5e1;line-height:1.45;border-top:1px dashed rgba(255,255,255,0.1);padding-top:7px;">
+          💡 Khi Sao Hỏa di chuyển, <strong style="color:#fbbf24;">MF₁</strong> co lại thì <strong style="color:#cbd5e1;">MF₂</strong> giãn ra, nhưng <strong>tổng luôn bằng đúng 2a</strong>!
+        </p>
+      </div>
+      <div id="panelDesc" class="info-card glass-panel" style="display:none;">
+        <div class="info-title"><span>🪐 Kết Luận Quỹ Đạo Sao Hỏa</span></div>
+        <ul class="info-list">
+          <li><strong>Hình dạng:</strong> Elip lệch tâm, <span style="color:#38bdf8;">e ≈ 0.0934</span>.</li>
+          <li><strong>F₁:</strong> Mặt Trời. F₂ hoàn toàn rỗng.</li>
+          <li><strong>Cận nhật:</strong> <span style="color:#4ade80;">≈ 206.6 triệu km</span></li>
+          <li><strong>Viễn nhật:</strong> <span style="color:#fb7185;">≈ 249.2 triệu km</span></li>
+          <li><strong>Chu kỳ:</strong> 687 ngày (≈ 1.88 năm)</li>
+          <li style="color:#f43f5e;font-style:italic;border-top:1px dashed rgba(255,255,255,0.15);padding-top:6px;margin-top:2px;">
+            👉 Kéo Sao Hỏa trực tiếp trên canvas!
+          </li>
+        </ul>
+      </div>
+      <div id="panelKepler" class="info-card glass-panel" style="display:none;">
+        <div class="info-title"><span>⚖️ Ba Định Luật Kepler</span></div>
+        <div class="kepler-law"><div class="law-title">① Định luật 1 – Quỹ đạo Elip</div>Mọi hành tinh chuyển động theo quỹ đạo <strong>hình Elip</strong>, Mặt Trời ở một tiêu điểm.</div>
+        <div class="kepler-law"><div class="law-title">② Định luật 2 – Diện tích quét</div>Đường nối Mặt Trời – Hành tinh quét <strong>diện tích bằng nhau</strong> trong thời gian bằng nhau.<br><em style="color:#fbbf24;font-size:0.72rem;">(Bật "Cung quét" để quan sát)</em></div>
+        <div class="kepler-law"><div class="law-title">③ Định luật 3 – T² / a³ = const</div>Sao Hỏa: T ≈ 1.88 năm, a ≈ 1.524 AU.<br><span style="color:#4ade80;">1.88² / 1.524³ ≈ 1.00 ✓</span></div>
+      </div>
     </div>
 
-    <!-- Tab 1: Định nghĩa Elip -->
-    <div id="panelElip" class="info-card glass-panel">
-      <div class="info-title" style="color:#fb7185; border-color:rgba(251,113,133,0.3);">
-        <span>📐 Định Nghĩa Hình Học Elip</span>
+    <!-- Sky Widget -->
+    <div class="sky-widget glass-panel">
+      <div class="sky-widget-header">
+        <span>Góc nhìn biểu kiến từ Trái Đất</span>
+        <span style="color:var(--clr-mars);font-size:0.7rem;">● Nghịch hành</span>
       </div>
+      <canvas id="skyCanvas" width="236" height="100"></canvas>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend glass-panel">
+      <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div> Mặt Trời (F₁)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2563eb;"></div> Trái Đất</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f43f5e;"></div> Sao Hỏa (M)</div>
+      <div class="legend-item" style="color:#fb7185;">— Đường ngắm nghịch hành</div>
+      <div class="legend-item" style="color:#38bdf8;">— Đường ngắm thuận hành</div>
+    </div>
+
+    <!-- Right Control Panel -->
+    <div class="control-panel glass-panel">
+      <div class="panel-heading">⚙️ Cấu hình mô phỏng</div>
+      <div class="control-item">
+        <label>Tốc độ thời gian</label>
+        <div class="slider-container">
+          <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+          <span class="val-badge"><span id="speedDisplay">1.0</span>×</span>
+        </div>
+      </div>
+      <div class="control-item">
+        <label>Độ lệch tâm Sao Hỏa (e)</label>
+        <div class="slider-container">
+          <input type="range" id="eccSlider" min="0.0" max="0.55" step="0.01" value="0.25">
+          <span class="val-badge" id="eccDisplay">0.25</span>
+        </div>
+        <small style="color:#64748b;font-size:0.66rem;">Thực tế e ≈ 0.09</small>
+      </div>
+      <div class="panel-heading" style="margin-top:2px;">👁 Hiển thị</div>
+      <label class="toggle-item"><input type="checkbox" id="chkFocalRays" checked><span style="color:#fb7185;font-weight:600;">Đoạn MF₁ &amp; MF₂</span></label>
+      <label class="toggle-item"><input type="checkbox" id="chkFocus" checked><span>Tiêu điểm 2 (F₂) &amp; Trục</span></label>
+      <label class="toggle-item"><input type="checkbox" id="chkEarth" checked><span>Quỹ đạo &amp; Vị trí Trái Đất</span></label>
+      <label class="toggle-item"><input type="checkbox" id="chkSightline" checked><span>Đường ngắm Trái Đất → Sao Hỏa</span></label>
+      <label class="toggle-item"><input type="checkbox" id="chkSweep"><span>Cung quét diện tích (ĐL 2 Kepler)</span></label>
+      <label class="toggle-item"><input type="checkbox" id="chkGrid"><span>Lưới tham chiếu AU</span></label>
+      <label class="toggle-item"><input type="checkbox" id="chkApses" checked><span>Điểm Cận nhật &amp; Viễn nhật</span></label>
+      <div class="btn-group">
+        <button id="btnPause" class="ctrl-btn btn-primary">⏸ Tạm dừng</button>
+        <button id="btnReset" class="ctrl-btn">↺ Đặt lại</button>
+      </div>
+      <div class="panel-heading">📊 Dữ liệu động học</div>
+      <div class="metrics">
+        <div class="metric-row"><span class="metric-label">Khoảng cách Hỏa–MT</span><span class="metric-val"><span id="valDist">—</span> AU</span></div>
+        <div class="metric-row"><span class="metric-label">Vận tốc Sao Hỏa</span><span class="metric-val" style="color:#fb7185;"><span id="valVMars">—</span> km/s</span></div>
+        <div class="metric-row"><span class="metric-label">Khoảng cách Đất–Hỏa</span><span class="metric-val"><span id="valDistEarth">—</span> AU</span></div>
+        <div style="margin-top:4px;"><div id="badgeStatus" class="status-tag tag-pro">Thuận hành</div></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         MOBILE UI (<= 768px)
+    ══════════════════════════════ -->
+
+    <!-- Mini metrics top-right -->
+    <div class="mini-metrics">
+      <div class="metric-row">
+        <span class="metric-label">Hỏa–MT:&nbsp;</span>
+        <span class="metric-val"><span id="mValDist">—</span> AU</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Vận tốc:&nbsp;</span>
+        <span class="metric-val" style="color:#fb7185;"><span id="mValV">—</span> km/s</span>
+      </div>
+    </div>
+
+    <!-- Mini controls top-left -->
+    <div class="mini-controls" id="miniControls">
+      <button class="mini-btn primary" id="mBtnPause" title="Tạm dừng / Tiếp tục">⏸</button>
+      <button class="mini-btn" id="mBtnReset" title="Đặt lại">↺</button>
+      <div class="speed-chip" id="mSpeedChip">1.0×</div>
+    </div>
+
+    <!-- Mobile status badge -->
+    <div class="mobile-status">
+      <div id="mBadgeStatus" class="status-tag tag-pro">✅ Thuận hành</div>
+    </div>
+
+    <!-- FAB bar bottom -->
+    <div class="mobile-fab-bar" id="mobileFabBar">
+      <button class="fab-btn active" id="fabElip" data-sheet="sheetInfo">
+        <span class="fab-icon">📐</span>
+        <span>Elip</span>
+      </button>
+      <button class="fab-btn" id="fabControl" data-sheet="sheetControl">
+        <span class="fab-icon">⚙️</span>
+        <span>Điều khiển</span>
+      </button>
+      <button class="fab-btn" id="fabSky" data-sheet="sheetSky">
+        <span class="fab-icon">🔭</span>
+        <span>Góc nhìn</span>
+      </button>
+      <button class="fab-btn" id="fabKepler" data-sheet="sheetKepler">
+        <span class="fab-icon">⚖️</span>
+        <span>Kepler</span>
+      </button>
+    </div>
+
+  </div><!-- /viewport -->
+</div><!-- /app -->
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM SHEETS (fixed, ngoài #app)
+══════════════════════════════════════════════ -->
+
+<!-- Overlay -->
+<div class="bottom-sheet-overlay" id="sheetOverlay"></div>
+
+<!-- Sheet 1: Thông tin Elip -->
+<div class="bottom-sheet" id="sheetInfo">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <span class="sheet-title">📐 Định nghĩa Elip & Quỹ đạo</span>
+    <button class="sheet-close" data-close>✕</button>
+  </div>
+  <div class="sheet-body">
+    <!-- Tab bar bên trong sheet -->
+    <div class="sheet-tab-bar">
+      <button class="sheet-tab-btn active elip-mode" data-stab="stElip">📐 Định nghĩa</button>
+      <button class="sheet-tab-btn" data-stab="stDesc">🪐 Quỹ đạo</button>
+    </div>
+
+    <!-- Nội dung Elip -->
+    <div id="stElip">
       <div class="math-formula">
         <div class="formula-main">MF₁ + MF₂ = 2a = hằng số</div>
-        <small style="color:#94a3b8; font-size:0.72rem;">M: Sao Hỏa &nbsp;|&nbsp; F₁: Mặt Trời &nbsp;|&nbsp; F₂: Tiêu điểm rỗng</small>
+        <small style="color:#94a3b8;font-size:0.7rem;">M: Sao Hỏa &nbsp;|&nbsp; F₁: Mặt Trời &nbsp;|&nbsp; F₂: Tiêu điểm rỗng</small>
       </div>
       <div class="math-calc">
-        <div class="calc-row">
-          <span>MF₁ (bán kính 1):</span>
-          <span id="valMF1" style="color:#fbbf24; font-weight:bold;">—</span>
-        </div>
-        <div class="calc-row">
-          <span>MF₂ (bán kính 2):</span>
-          <span id="valMF2" style="color:#cbd5e1; font-weight:bold;">—</span>
-        </div>
-        <div class="calc-row total">
-          <span>Tổng MF₁ + MF₂:</span>
-          <span id="valTotal2a">—</span>
-        </div>
+        <div class="calc-row"><span>MF₁ (bán kính 1):</span><span id="mValMF1" style="color:#fbbf24;font-weight:bold;">—</span></div>
+        <div class="calc-row"><span>MF₂ (bán kính 2):</span><span id="mValMF2" style="color:#cbd5e1;font-weight:bold;">—</span></div>
+        <div class="calc-row total"><span>Tổng MF₁ + MF₂:</span><span id="mValTotal2a">—</span></div>
       </div>
-      <p style="margin-top:9px; font-size:0.76rem; color:#cbd5e1; line-height:1.45;
-                border-top:1px dashed rgba(255,255,255,0.1); padding-top:8px;">
-        💡 Khi Sao Hỏa di chuyển, <strong style="color:#fbbf24;">MF₁</strong> co lại thì
-        <strong style="color:#cbd5e1;">MF₂</strong> giãn ra, nhưng <strong>tổng luôn bằng đúng 2a</strong>!
+      <p style="margin-top:10px;font-size:0.78rem;color:#cbd5e1;line-height:1.5;border-top:1px dashed rgba(255,255,255,0.1);padding-top:8px;">
+        💡 Khi Sao Hỏa di chuyển, <strong style="color:#fbbf24;">MF₁</strong> co lại thì <strong style="color:#cbd5e1;">MF₂</strong> giãn ra, nhưng <strong>tổng luôn bằng đúng 2a</strong>!
       </p>
     </div>
 
-    <!-- Tab 2: Quỹ đạo -->
-    <div id="panelDesc" class="info-card glass-panel" style="display:none;">
-      <div class="info-title"><span>🪐 Kết Luận Quỹ Đạo Sao Hỏa</span></div>
+    <!-- Nội dung Quỹ đạo -->
+    <div id="stDesc" style="display:none;">
       <ul class="info-list">
-        <li><strong>Hình dạng:</strong> Elip lệch tâm với <span style="color:#38bdf8;">e ≈ 0.0934</span> (thực tế).</li>
-        <li><strong>Tiêu điểm F₁:</strong> Mặt Trời (<span style="color:#fbbf24;">☀</span>). F₂ hoàn toàn rỗng.</li>
-        <li><strong>Cận nhật:</strong> <span style="color:#4ade80;">≈ 206.6 triệu km</span> — đây là khoảng cách gần nhất.</li>
-        <li><strong>Viễn nhật:</strong> <span style="color:#fb7185;">≈ 249.2 triệu km</span> — đây là khoảng cách xa nhất.</li>
+        <li><strong>Hình dạng:</strong> Elip lệch tâm, <span style="color:#38bdf8;">e ≈ 0.0934</span>.</li>
+        <li><strong>F₁:</strong> Mặt Trời (<span style="color:#fbbf24;">☀</span>). F₂ hoàn toàn rỗng.</li>
+        <li><strong>Cận nhật:</strong> <span style="color:#4ade80;">≈ 206.6 triệu km</span> — gần nhất.</li>
+        <li><strong>Viễn nhật:</strong> <span style="color:#fb7185;">≈ 249.2 triệu km</span> — xa nhất.</li>
         <li><strong>Chu kỳ:</strong> 687 ngày Trái Đất (≈ 1.88 năm).</li>
-        <li style="color:#f43f5e; font-style:italic; border-top:1px dashed rgba(255,255,255,0.15);
-                   padding-top:6px; margin-top:2px;">
+        <li style="color:#f43f5e;font-style:italic;border-top:1px dashed rgba(255,255,255,0.15);padding-top:7px;margin-top:3px;">
           👉 <strong>Tương tác:</strong> Kéo Sao Hỏa trực tiếp trên canvas!
         </li>
       </ul>
     </div>
-
-    <!-- Tab 3: 3 Định Luật Kepler (MỚI) -->
-    <div id="panelKepler" class="info-card glass-panel" style="display:none;">
-      <div class="info-title"><span>⚖️ Ba Định Luật Kepler</span></div>
-      <div class="kepler-law">
-        <div class="law-title">① Định luật 1 – Quỹ đạo Elip</div>
-        Mọi hành tinh chuyển động theo quỹ đạo <strong>hình Elip</strong>, Mặt Trời ở một tiêu điểm.
-      </div>
-      <div class="kepler-law">
-        <div class="law-title">② Định luật 2 – Diện tích quét</div>
-        Đường nối Mặt Trời – Hành tinh quét <strong>diện tích bằng nhau</strong> trong thời gian bằng nhau → gần MT đi nhanh hơn.
-        <br><em style="color:#fbbf24; font-size:0.73rem;">(Bật "Cung quét" để quan sát)</em>
-      </div>
-      <div class="kepler-law">
-        <div class="law-title">③ Định luật 3 – Chu kỳ & Khoảng cách</div>
-        T² / a³ = hằng số.
-        <br>Sao Hỏa: T ≈ 1.88 năm, a ≈ 1.524 AU.
-        <br><span style="color:#4ade80;">1.88² / 1.524³ ≈ 1.00 ✓</span>
-      </div>
-    </div>
-  </div><!-- /left-container -->
-
-  <!-- ── SKY WIDGET ── -->
-  <div class="sky-widget glass-panel">
-    <div class="sky-widget-header">
-      <span>Góc nhìn biểu kiến từ Trái Đất</span>
-      <span class="sky-label-retro">● Nghịch hành</span>
-    </div>
-    <canvas id="skyCanvas" width="256" height="110"></canvas>
   </div>
+</div>
 
-  <!-- ── LEGEND ── -->
-  <div class="legend glass-panel">
-    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div> Mặt Trời (F₁)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#2563eb;"></div> Trái Đất</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f43f5e;"></div> Sao Hỏa (M)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8; border-radius:0; height:2px; width:18px;"></div> Tiêu điểm 2 (rỗng)</div>
-    <div class="legend-item" style="color:#fb7185;">— Đường ngắm nghịch hành</div>
-    <div class="legend-item" style="color:#38bdf8;">— Đường ngắm thuận hành</div>
+<!-- Sheet 2: Điều khiển -->
+<div class="bottom-sheet" id="sheetControl">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <span class="sheet-title">⚙️ Cấu hình mô phỏng</span>
+    <button class="sheet-close" data-close>✕</button>
   </div>
-
-  <!-- ── RIGHT CONTROL PANEL ── -->
-  <div class="control-panel glass-panel">
-    <div class="panel-heading">⚙️ Cấu hình mô phỏng</div>
-
-    <div class="control-item">
+  <div class="sheet-body">
+    <div class="panel-heading" style="margin-bottom:10px;">Tốc độ & Độ lệch tâm</div>
+    <div class="control-item" style="margin-bottom:12px;">
       <label>Tốc độ thời gian</label>
       <div class="slider-container">
-        <input type="range" id="speedSlider" min="0.1" max="5.0" step="0.1" value="1.0">
-        <span class="val-badge"><span id="speedDisplay">1.0</span>×</span>
+        <input type="range" id="mSpeedSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+        <span class="val-badge"><span id="mSpeedDisplay">1.0</span>×</span>
       </div>
     </div>
-
-    <div class="control-item">
+    <div class="control-item" style="margin-bottom:14px;">
       <label>Độ lệch tâm Sao Hỏa (e)</label>
       <div class="slider-container">
-        <input type="range" id="eccSlider" min="0.0" max="0.55" step="0.01" value="0.25">
-        <span class="val-badge" id="eccDisplay">0.25</span>
+        <input type="range" id="mEccSlider" min="0.0" max="0.55" step="0.01" value="0.25">
+        <span class="val-badge" id="mEccDisplay">0.25</span>
       </div>
-      <small style="color:#64748b; font-size:0.68rem;">Thực tế e ≈ 0.09 | Tăng để trực quan hóa</small>
+      <small style="color:#64748b;font-size:0.7rem;">Thực tế e ≈ 0.09 | Tăng để trực quan hóa</small>
     </div>
 
-    <div class="panel-heading" style="margin-top:2px;">👁 Hiển thị</div>
+    <div class="panel-heading" style="margin-bottom:10px;">👁 Hiển thị</div>
+    <label class="toggle-item"><input type="checkbox" id="mChkFocalRays" checked><span style="color:#fb7185;font-weight:600;">Đoạn MF₁ &amp; MF₂</span></label>
+    <label class="toggle-item"><input type="checkbox" id="mChkFocus" checked><span>Tiêu điểm 2 (F₂) &amp; Trục</span></label>
+    <label class="toggle-item"><input type="checkbox" id="mChkEarth" checked><span>Quỹ đạo &amp; Vị trí Trái Đất</span></label>
+    <label class="toggle-item"><input type="checkbox" id="mChkSightline" checked><span>Đường ngắm Trái Đất → Sao Hỏa</span></label>
+    <label class="toggle-item"><input type="checkbox" id="mChkSweep"><span>Cung quét diện tích (ĐL 2 Kepler)</span></label>
+    <label class="toggle-item"><input type="checkbox" id="mChkApses" checked><span>Điểm Cận nhật &amp; Viễn nhật</span></label>
 
-    <label class="toggle-item">
-      <input type="checkbox" id="chkFocalRays" checked>
-      <span style="color:#fb7185; font-weight:600;">Đoạn MF₁ &amp; MF₂</span>
-    </label>
-    <label class="toggle-item">
-      <input type="checkbox" id="chkFocus" checked>
-      <span>Tiêu điểm 2 (F₂) &amp; Trục</span>
-    </label>
-    <label class="toggle-item">
-      <input type="checkbox" id="chkEarth" checked>
-      <span>Quỹ đạo &amp; Vị trí Trái Đất</span>
-    </label>
-    <label class="toggle-item">
-      <input type="checkbox" id="chkSightline" checked>
-      <span>Đường ngắm Trái Đất → Sao Hỏa</span>
-    </label>
-    <label class="toggle-item">
-      <input type="checkbox" id="chkSweep">
-      <span>Cung quét diện tích (ĐL 2 Kepler)</span>
-    </label>
-    <label class="toggle-item">
-      <input type="checkbox" id="chkGrid">
-      <span>Lưới tham chiếu (AU)</span>
-    </label>
-    <label class="toggle-item">
-      <input type="checkbox" id="chkApses" checked>
-      <span>Điểm Cận nhật &amp; Viễn nhật</span>
-    </label>
-
-    <div class="btn-group">
-      <button id="btnPause" class="ctrl-btn btn-primary">⏸ Tạm dừng</button>
-      <button id="btnReset" class="ctrl-btn">↺ Đặt lại</button>
+    <div class="btn-group" style="margin-top:16px;">
+      <button id="mBtnPause2" class="ctrl-btn btn-primary">⏸ Tạm dừng</button>
+      <button id="mBtnReset2" class="ctrl-btn">↺ Đặt lại</button>
     </div>
 
-    <div class="panel-heading">📊 Dữ liệu động học</div>
+    <div class="panel-heading" style="margin-top:16px;margin-bottom:8px;">📊 Dữ liệu động học</div>
     <div class="metrics">
-      <div class="metric-row">
-        <span class="metric-label">Khoảng cách Hỏa–MT</span>
-        <span class="metric-val"><span id="valDist">—</span> AU</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Vận tốc Sao Hỏa</span>
-        <span class="metric-val" style="color:#fb7185;"><span id="valVMars">—</span> km/s</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Khoảng cách Đất–Hỏa</span>
-        <span class="metric-val"><span id="valDistEarth">—</span> AU</span>
-      </div>
-      <div class="metric-row">
-        <span class="metric-label">Góc Hỏa tinh (ε)</span>
-        <span class="metric-val"><span id="valAngle">—</span>°</span>
-      </div>
-      <div style="margin-top:5px;">
-        <div id="badgeStatus" class="status-tag tag-pro">Thuận hành (Prograde)</div>
-      </div>
+      <div class="metric-row"><span class="metric-label">Khoảng cách Hỏa–MT</span><span class="metric-val"><span id="mValDist2">—</span> AU</span></div>
+      <div class="metric-row"><span class="metric-label">Vận tốc Sao Hỏa</span><span class="metric-val" style="color:#fb7185;"><span id="mValVMars2">—</span> km/s</span></div>
+      <div class="metric-row"><span class="metric-label">Khoảng cách Đất–Hỏa</span><span class="metric-val"><span id="mValDistEarth2">—</span> AU</span></div>
+      <div style="margin-top:5px;"><div id="mBadgeStatus2" class="status-tag tag-pro">Thuận hành</div></div>
     </div>
-  </div><!-- /control-panel -->
+  </div>
+</div>
 
-</div><!-- /viewport -->
+<!-- Sheet 3: Sky View -->
+<div class="bottom-sheet" id="sheetSky">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <span class="sheet-title">🔭 Góc nhìn biểu kiến từ Trái Đất</span>
+    <button class="sheet-close" data-close>✕</button>
+  </div>
+  <div class="sheet-body">
+    <p style="font-size:0.78rem;color:#94a3b8;margin-bottom:10px;">
+      Vết chuyển động biểu kiến của Sao Hỏa trên bầu trời. Màu đỏ = Nghịch hành, xanh = Thuận hành.
+    </p>
+    <canvas id="mSkyCanvas" width="320" height="140" style="width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:#020617;display:block;"></canvas>
+  </div>
+</div>
+
+<!-- Sheet 4: Định luật Kepler -->
+<div class="bottom-sheet" id="sheetKepler">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <span class="sheet-title">⚖️ Ba Định Luật Kepler</span>
+    <button class="sheet-close" data-close>✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="kepler-law"><div class="law-title">① Định luật 1 – Quỹ đạo Elip</div>Mọi hành tinh chuyển động theo quỹ đạo <strong>hình Elip</strong>, Mặt Trời ở một tiêu điểm.</div>
+    <div class="kepler-law"><div class="law-title">② Định luật 2 – Diện tích quét</div>Đường nối Mặt Trời – Hành tinh quét <strong>diện tích bằng nhau</strong> trong thời gian bằng nhau → gần MT đi nhanh hơn.<br><em style="color:#fbbf24;font-size:0.73rem;">(Bật "Cung quét" để quan sát)</em></div>
+    <div class="kepler-law"><div class="law-title">③ Định luật 3 – T² / a³ = const</div>Sao Hỏa: T ≈ 1.88 năm, a ≈ 1.524 AU.<br><span style="color:#4ade80;">1.88² / 1.524³ ≈ 1.00 ✓</span></div>
+    <div style="margin-top:12px;padding:10px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.2);border-radius:8px;font-size:0.78rem;color:#cbd5e1;line-height:1.6;">
+      📌 <strong>Áp dụng bài toán:</strong><br>
+      a = 227.9 triệu km, b = 226.9 triệu km<br>
+      c = √(a²−b²) ≈ 21.326 triệu km<br>
+      <span style="color:#4ade80;">d<sub>max</sub> = a + c ≈ <strong>249.226 triệu km</strong> ✓</span>
+    </div>
+  </div>
+</div>
 
 <script>
 "use strict";
 
-// ── DOM refs ───────────────────────────────────────────────────────────────
+// ── DOM ──────────────────────────────────────────────────────────────────────
 const canvas    = document.getElementById("mainCanvas");
 const ctx       = canvas.getContext("2d");
-const skyCanvas = document.getElementById("skyCanvas");
-const skyCtx    = skyCanvas.getContext("2d");
-const tooltip   = document.getElementById("tooltip");
+const skyCanvas = document.getElementById("skyCanvas");       // desktop
+const skyCtx    = skyCanvas ? skyCanvas.getContext("2d") : null;
+const mSkyCanvas = document.getElementById("mSkyCanvas");    // mobile
+const mSkyCtx   = mSkyCanvas ? mSkyCanvas.getContext("2d") : null;
 
-const btnTabElip   = document.getElementById("btnTabElip");
-const btnTabDesc   = document.getElementById("btnTabDesc");
-const btnTabKepler = document.getElementById("btnTabKepler");
-const panelElip    = document.getElementById("panelElip");
-const panelDesc    = document.getElementById("panelDesc");
-const panelKepler  = document.getElementById("panelKepler");
-
+// Desktop UI
 const valMF1     = document.getElementById("valMF1");
 const valMF2     = document.getElementById("valMF2");
 const valTotal2a = document.getElementById("valTotal2a");
-
+const valDist    = document.getElementById("valDist");
+const valVMars   = document.getElementById("valVMars");
+const valDistEarth = document.getElementById("valDistEarth");
+const badgeStatus  = document.getElementById("badgeStatus");
 const speedSlider  = document.getElementById("speedSlider");
 const speedDisplay = document.getElementById("speedDisplay");
 const eccSlider    = document.getElementById("eccSlider");
 const eccDisplay   = document.getElementById("eccDisplay");
-
 const chkFocalRays = document.getElementById("chkFocalRays");
 const chkFocus     = document.getElementById("chkFocus");
 const chkEarth     = document.getElementById("chkEarth");
@@ -637,56 +898,89 @@ const chkSightline = document.getElementById("chkSightline");
 const chkSweep     = document.getElementById("chkSweep");
 const chkGrid      = document.getElementById("chkGrid");
 const chkApses     = document.getElementById("chkApses");
+const btnPause     = document.getElementById("btnPause");
+const btnReset     = document.getElementById("btnReset");
 
-const btnPause = document.getElementById("btnPause");
-const btnReset = document.getElementById("btnReset");
+// Desktop tabs
+const btnTabElip   = document.getElementById("btnTabElip");
+const btnTabDesc   = document.getElementById("btnTabDesc");
+const btnTabKepler = document.getElementById("btnTabKepler");
+const panelElip    = document.getElementById("panelElip");
+const panelDesc    = document.getElementById("panelDesc");
+const panelKepler  = document.getElementById("panelKepler");
 
-const valDist      = document.getElementById("valDist");
-const valVMars     = document.getElementById("valVMars");
-const valDistEarth = document.getElementById("valDistEarth");
-const valAngle     = document.getElementById("valAngle");
-const badgeStatus  = document.getElementById("badgeStatus");
+// Mobile UI
+const mValDist    = document.getElementById("mValDist");
+const mValV       = document.getElementById("mValV");
+const mBadgeStatus= document.getElementById("mBadgeStatus");
+const mValMF1     = document.getElementById("mValMF1");
+const mValMF2     = document.getElementById("mValMF2");
+const mValTotal2a = document.getElementById("mValTotal2a");
+const mValDist2   = document.getElementById("mValDist2");
+const mValVMars2  = document.getElementById("mValVMars2");
+const mValDistEarth2 = document.getElementById("mValDistEarth2");
+const mBadgeStatus2  = document.getElementById("mBadgeStatus2");
+const mSpeedSlider   = document.getElementById("mSpeedSlider");
+const mSpeedDisplay  = document.getElementById("mSpeedDisplay");
+const mSpeedChip     = document.getElementById("mSpeedChip");
+const mEccSlider     = document.getElementById("mEccSlider");
+const mEccDisplay    = document.getElementById("mEccDisplay");
+const mChkFocalRays  = document.getElementById("mChkFocalRays");
+const mChkFocus      = document.getElementById("mChkFocus");
+const mChkEarth      = document.getElementById("mChkEarth");
+const mChkSightline  = document.getElementById("mChkSightline");
+const mChkSweep      = document.getElementById("mChkSweep");
+const mChkApses      = document.getElementById("mChkApses");
+const mBtnPause      = document.getElementById("mBtnPause");
+const mBtnReset      = document.getElementById("mBtnReset");
+const mBtnPause2     = document.getElementById("mBtnPause2");
+const mBtnReset2     = document.getElementById("mBtnReset2");
 
-// ── Orbital constants (AU, SI) ─────────────────────────────────────────────
-const A_EARTH     = 1.0;
-const E_EARTH     = 0.0167;
-const A_MARS      = 1.524;
-const T_MARS_RATIO = 1.881;   // T_Mars / T_Earth
-const MU          = 132712440018; // km³/s² – GM_sun
-const AU_KM       = 149597870.7;
+// ── Helper: lấy trạng thái checkbox đúng cho cả desktop/mobile ──
+function getChk(desktopId, mobileId) {
+  const isMobile = window.innerWidth <= 768;
+  const el = isMobile
+    ? document.getElementById(mobileId)
+    : document.getElementById(desktopId);
+  return el ? el.checked : true;
+}
 
-// ── Simulation state ────────────────────────────────────────────────────────
-let e_Mars     = 0.25;
-let M_Earth    = 0;
-let M_Mars     = Math.PI * 0.25;
-let isRunning  = true;
-let timeScale  = 1.0;
-let prevAngle  = null;
+// ── Orbital constants ────────────────────────────────────────────────────────
+const A_EARTH      = 1.0;
+const E_EARTH      = 0.0167;
+const A_MARS       = 1.524;
+const T_MARS_RATIO = 1.881;
+const MU           = 132712440018;
+const AU_KM        = 149597870.7;
+
+// ── State ────────────────────────────────────────────────────────────────────
+let e_Mars       = 0.25;
+let M_Earth      = 0;
+let M_Mars       = Math.PI * 0.25;
+let isRunning    = true;
+let timeScale    = 1.0;
+let prevAngle    = null;
 let isRetrograde = false;
 
-// ── Dragging state ──────────────────────────────────────────────────────────
 let isDraggingMars = false;
 let currentMarsPos = { x: 0, y: 0 };
-const MARS_HIT_R   = 26;
+const MARS_HIT_R   = 28;
 
-// ── Trail & star data ───────────────────────────────────────────────────────
 const sightlines = [];
 const skyTrail   = [];
 
-// Tạo sao ngẫu nhiên 1 lần, dùng lại mãi (tránh generate mỗi frame)
+// Stars
 const STARS = Array.from({ length: 160 }, () => ({
-  x:     Math.random(),
-  y:     Math.random(),
-  size:  Math.random() * 1.4 + 0.3,
-  alpha: Math.random() * 0.75 + 0.2,
-  // nhấp nháy nhẹ
-  twinkleSpeed: Math.random() * 0.02 + 0.005,
+  x: Math.random(), y: Math.random(),
+  size: Math.random() * 1.4 + 0.3,
+  alpha: Math.random() * 0.7 + 0.2,
+  twinkleSpeed: Math.random() * 0.03 + 0.005,
   twinklePhase: Math.random() * Math.PI * 2,
 }));
 
-let frameTime = 0; // dùng cho twinkle
+let frameTime = 0;
 
-// ── Resize ──────────────────────────────────────────────────────────────────
+// ── Resize ───────────────────────────────────────────────────────────────────
 function resize() {
   const vp = document.getElementById("viewport");
   canvas.width  = vp.clientWidth;
@@ -695,150 +989,110 @@ function resize() {
 window.addEventListener("resize", resize);
 resize();
 
-// ── Kepler solver (Newton-Raphson) ──────────────────────────────────────────
+// ── Kepler ───────────────────────────────────────────────────────────────────
 function solveKepler(M, ecc) {
   let E = M;
   for (let i = 0; i < 12; i++) {
-    const delta = (E - ecc * Math.sin(E) - M) / (1 - ecc * Math.cos(E));
-    E -= delta;
-    if (Math.abs(delta) < 1e-8) break; // độ chính xác cao hơn
+    const d = (E - ecc * Math.sin(E) - M) / (1 - ecc * Math.cos(E));
+    E -= d;
+    if (Math.abs(d) < 1e-8) break;
   }
   return E;
 }
 
-// Chuyển từ anomaly lệch tâm E → vị trí (x,y) trên canvas
 function orbitPos(M_anom, ecc, aSemi, sunX, sunY, scale) {
   const E  = solveKepler(M_anom, ecc);
   const nu = 2 * Math.atan2(
     Math.sqrt(1 + ecc) * Math.sin(E / 2),
     Math.sqrt(1 - ecc) * Math.cos(E / 2)
   );
-  const r  = aSemi * (1 - ecc * Math.cos(E)) * scale;
+  const r = aSemi * (1 - ecc * Math.cos(E));
   return {
-    x:     sunX - r * Math.cos(nu),
-    y:     sunY - r * Math.sin(nu),
-    r_AU:  aSemi * (1 - ecc * Math.cos(E)),
-    E, nu
+    x: sunX - r * scale * Math.cos(nu),
+    y: sunY - r * scale * Math.sin(nu),
+    r_AU: r, E, nu
   };
 }
 
-// ── Tab switching ────────────────────────────────────────────────────────────
-function activateTab(activeBtn, activePanel, otherBtns, otherPanels) {
-  activeBtn.setAttribute("aria-selected","true");
-  activePanel.style.display = "block";
-  otherBtns.forEach(b => b.setAttribute("aria-selected","false"));
-  otherPanels.forEach(p => { p.style.display = "none"; });
-}
-
-btnTabElip.addEventListener("click", () => {
-  btnTabElip.className   = "tab-btn active elip-mode";
-  btnTabDesc.className   = "tab-btn";
-  btnTabKepler.className = "tab-btn";
-  activateTab(btnTabElip, panelElip, [btnTabDesc, btnTabKepler], [panelDesc, panelKepler]);
-});
-btnTabDesc.addEventListener("click", () => {
-  btnTabElip.className   = "tab-btn";
-  btnTabDesc.className   = "tab-btn active";
-  btnTabKepler.className = "tab-btn";
-  activateTab(btnTabDesc, panelDesc, [btnTabElip, btnTabKepler], [panelElip, panelKepler]);
-});
-btnTabKepler.addEventListener("click", () => {
-  btnTabElip.className   = "tab-btn";
-  btnTabDesc.className   = "tab-btn";
-  btnTabKepler.className = "tab-btn active";
-  activateTab(btnTabKepler, panelKepler, [btnTabElip, btnTabDesc], [panelElip, panelDesc]);
-});
-
 // ── Draw helpers ─────────────────────────────────────────────────────────────
-
-/** Vẽ nhãn chữ có nền mờ (dễ đọc trên nền sao) */
 function drawLabel(c, text, x, y, color = "#f8fafc", size = 11) {
   c.save();
   c.font = `${size}px sans-serif`;
   const w = c.measureText(text).width;
-  c.fillStyle = "rgba(3,7,18,0.65)";
+  c.fillStyle = "rgba(3,7,18,0.6)";
   c.fillRect(x - 2, y - size, w + 4, size + 4);
   c.fillStyle = color;
   c.fillText(text, x, y);
   c.restore();
 }
 
-/** Vẽ đường kẻ đứt với reset lineDash tự động */
 function dashedLine(c, x1, y1, x2, y2, dash, color, width = 1) {
   c.save();
   c.setLineDash(dash);
   c.strokeStyle = color;
   c.lineWidth   = width;
-  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2);
-  c.stroke();
+  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
   c.restore();
 }
 
-// ── MAIN RENDER LOOP ─────────────────────────────────────────────────────────
+// ── Trạng thái UI hiển thị ──────────────────────────────────────────────────
+function isMobile() { return window.innerWidth <= 768; }
+
+function showFocalRays()  { return isMobile() ? mChkFocalRays.checked  : chkFocalRays.checked; }
+function showFocus()      { return isMobile() ? mChkFocus.checked      : chkFocus.checked; }
+function showEarth()      { return isMobile() ? mChkEarth.checked      : chkEarth.checked; }
+function showSightline()  { return isMobile() ? mChkSightline.checked  : chkSightline.checked; }
+function showSweep()      { return isMobile() ? mChkSweep.checked      : chkSweep.checked; }
+function showApses()      { return isMobile() ? mChkApses.checked      : chkApses.checked; }
+function showGrid()       { return isMobile() ? false                  : (chkGrid ? chkGrid.checked : false); }
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
 function render(ts = 0) {
-  frameTime = ts * 0.001; // giây
+  frameTime = ts * 0.001;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // ── 0. Nền sao (với nhấp nháy) ──
+  // 0. Stars
   STARS.forEach(s => {
-    const twinkle = 0.5 + 0.5 * Math.sin(frameTime * s.twinkleSpeed * 60 + s.twinklePhase);
-    const a = s.alpha * (0.6 + 0.4 * twinkle);
+    const tw = 0.5 + 0.5 * Math.sin(frameTime * s.twinkleSpeed * 60 + s.twinklePhase);
+    const a  = s.alpha * (0.6 + 0.4 * tw);
     ctx.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`;
     ctx.beginPath();
     ctx.arc(s.x * canvas.width, s.y * canvas.height, s.size, 0, Math.PI * 2);
     ctx.fill();
   });
 
-  // ── Layout cơ bản ──
   const cx    = canvas.width  / 2;
   const cy    = canvas.height / 2;
   const scale = Math.min(canvas.width, canvas.height) / 4.3;
 
-  // Tham số elip Trái Đất
-  const aE = A_EARTH * scale;
-  const bE = aE * Math.sqrt(1 - E_EARTH * E_EARTH);
-  const cE = aE * E_EARTH;
+  const aE = A_EARTH * scale, bE = aE * Math.sqrt(1 - E_EARTH**2), cE = aE * E_EARTH;
+  const aM = A_MARS  * scale, bM = aM * Math.sqrt(1 - e_Mars**2),  cM = aM * e_Mars;
 
-  // Tham số elip Sao Hỏa
-  const aM  = A_MARS * scale;
-  const bM  = aM * Math.sqrt(1 - e_Mars * e_Mars);
-  const cM  = aM * e_Mars;
-
-  // Mặt Trời tại F₁ (cx, cy)
   const sunX = cx, sunY = cy;
-  // Tâm hình học elip Sao Hỏa & F₂
-  const omX = sunX + cM, omY = sunY;   // tâm O Mars
-  const f2X = omX + cM,  f2Y = sunY;   // tiêu điểm 2
+  const omX  = sunX + cM, omY = sunY;
+  const f2X  = omX  + cM, f2Y = sunY;
 
-  // ── Cập nhật thời gian ──
   if (isRunning && !isDraggingMars) {
-    const dM   = 0.012 * timeScale;
-    M_Earth    = (M_Earth + dM) % (Math.PI * 2);
-    M_Mars     = (M_Mars  + dM / T_MARS_RATIO) % (Math.PI * 2);
+    const dM = 0.012 * timeScale;
+    M_Earth  = (M_Earth + dM) % (Math.PI * 2);
+    M_Mars   = (M_Mars  + dM / T_MARS_RATIO) % (Math.PI * 2);
   }
 
-  // ── Tính vị trí ──
   const earth = orbitPos(M_Earth, E_EARTH, A_EARTH, sunX, sunY, scale);
   const mars  = orbitPos(M_Mars,  e_Mars,  A_MARS,  sunX, sunY, scale);
-
   currentMarsPos = { x: mars.x, y: mars.y };
 
-  // MF1, MF2
   const d1_AU  = mars.r_AU;
   const d2_px  = Math.hypot(mars.x - f2X, mars.y - f2Y);
   const d2_AU  = d2_px / scale;
   const sum2a  = d1_AU + d2_AU;
-
-  // Khoảng cách Đất–Hỏa
   const dEM_AU = Math.hypot(mars.x - earth.x, mars.y - earth.y) / scale;
   const curAngle = Math.atan2(mars.y - earth.y, mars.x - earth.x);
 
-  // Vận tốc vis-viva
-  const rM_km = mars.r_AU  * AU_KM;
-  const aM_km = A_MARS     * AU_KM;
+  const rM_km = mars.r_AU * AU_KM;
+  const aM_km = A_MARS    * AU_KM;
   const vMars = Math.sqrt(MU * (2 / rM_km - 1 / aM_km));
 
-  // Retrograde detection
   if (prevAngle !== null && (isRunning || isDraggingMars)) {
     let diff = curAngle - prevAngle;
     if (diff >  Math.PI) diff -= 2 * Math.PI;
@@ -849,296 +1103,209 @@ function render(ts = 0) {
 
   const isOpposition = dEM_AU < 0.65;
 
-  // Ghi trail
-  if ((isRunning || isDraggingMars) && chkSightline.checked) {
+  if ((isRunning || isDraggingMars) && showSightline()) {
     sightlines.push({ ex: earth.x, ey: earth.y, mx: mars.x, my: mars.y, retro: isRetrograde });
     if (sightlines.length > 150) sightlines.shift();
     skyTrail.push({ angle: curAngle, retro: isRetrograde });
     if (skyTrail.length > 350) skyTrail.shift();
   }
 
-  // ── 1. Lưới tham chiếu AU (MỚI) ──
-  if (chkGrid.checked) {
+  // 1. Grid
+  if (showGrid()) {
     ctx.save();
     ctx.strokeStyle = "rgba(255,255,255,0.04)";
-    ctx.lineWidth   = 1;
+    ctx.lineWidth = 1;
     [1, 2, 3].forEach(r => {
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, r * scale * 0.7, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(sunX, sunY, r * scale * 0.7, 0, Math.PI * 2); ctx.stroke();
     });
     ctx.fillStyle = "rgba(255,255,255,0.15)";
-    ctx.font      = "10px monospace";
+    ctx.font = "10px monospace";
     ctx.fillText("1 AU", sunX + scale * 0.7 + 4, sunY - 4);
     ctx.restore();
   }
 
-  // ── 2. Trục & F₂ ──
-  if (chkFocus.checked) {
-    // Trục chính ngang
-    dashedLine(ctx, 0, sunY, canvas.width, sunY,
-               [6, 4], "rgba(255,255,255,0.06)", 1);
-
-    // Tâm O Mars
-    ctx.save();
-    ctx.strokeStyle = "rgba(148,163,184,0.4)";
-    ctx.lineWidth   = 1;
-    ctx.beginPath(); ctx.arc(omX, omY, 3, 0, Math.PI * 2); ctx.stroke();
+  // 2. F₂ & trục
+  if (showFocus()) {
+    dashedLine(ctx, 0, sunY, canvas.width, sunY, [6,4], "rgba(255,255,255,0.05)", 1);
+    ctx.save(); ctx.strokeStyle = "rgba(148,163,184,0.4)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(omX, omY, 3, 0, Math.PI*2); ctx.stroke();
     ctx.restore();
-    drawLabel(ctx, "O", omX + 5, omY - 7, "rgba(148,163,184,0.6)", 10);
-
-    // F₂
-    ctx.save();
-    ctx.strokeStyle = "#94a3b8";
-    ctx.lineWidth   = 1.5;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath(); ctx.arc(f2X, f2Y, 6, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-    drawLabel(ctx, "F₂ (rỗng)", f2X - 48, f2Y - 13, "#94a3b8", 10);
+    drawLabel(ctx, "O", omX+5, omY-7, "rgba(148,163,184,0.5)", 10);
+    ctx.save(); ctx.strokeStyle="#94a3b8"; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.arc(f2X, f2Y, 6, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
+    drawLabel(ctx, "F₂ (rỗng)", f2X-46, f2Y-13, "#94a3b8", 10);
   }
 
-  // ── 3. Điểm cận nhật & viễn nhật (MỚI) ──
-  if (chkApses.checked) {
-    // Cận nhật: nằm bên phải tâm elip (perihelion, góc = 0 → x = +aM từ tâm)
-    const perX = omX + aM, perY = sunY;   // trên canvas, x+ là phải
-    const aphX = omX - aM, aphY = sunY;
-
+  // 3. Cận/Viễn nhật
+  if (showApses()) {
+    const perX = omX + aM, aphX = omX - aM;
     ctx.save();
-    ctx.fillStyle = "#4ade80";
-    ctx.beginPath(); ctx.arc(perX, perY, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#fb7185";
-    ctx.beginPath(); ctx.arc(aphX, aphY, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#4ade80"; ctx.beginPath(); ctx.arc(perX, sunY, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#fb7185"; ctx.beginPath(); ctx.arc(aphX, sunY, 4, 0, Math.PI*2); ctx.fill();
     ctx.restore();
-
-    drawLabel(ctx, "Cận nhật", perX + 6, perY - 6, "#4ade80", 10);
-    drawLabel(ctx, "Viễn nhật", aphX - 60, aphY - 6, "#fb7185", 10);
+    drawLabel(ctx, "Cận nhật",  perX+6,  sunY-6, "#4ade80", 10);
+    drawLabel(ctx, "Viễn nhật", aphX-58, sunY-6, "#fb7185", 10);
   }
 
-  // ── 4. Quỹ đạo Trái Đất ──
-  if (chkEarth.checked) {
-    ctx.beginPath();
-    ctx.ellipse(sunX + cE, sunY, aE, bE, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(56,189,248,0.22)";
-    ctx.lineWidth   = 1.5;
-    ctx.stroke();
+  // 4. Quỹ đạo Trái Đất
+  if (showEarth()) {
+    ctx.beginPath(); ctx.ellipse(sunX+cE, sunY, aE, bE, 0, 0, Math.PI*2);
+    ctx.strokeStyle = "rgba(56,189,248,0.2)"; ctx.lineWidth = 1.5; ctx.stroke();
   }
 
-  // ── 5. Quỹ đạo Sao Hỏa ──
-  ctx.beginPath();
-  ctx.ellipse(omX, omY, aM, bM, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(244,63,94,0.32)";
-  ctx.lineWidth   = 2;
-  ctx.stroke();
+  // 5. Quỹ đạo Sao Hỏa
+  ctx.beginPath(); ctx.ellipse(omX, omY, aM, bM, 0, 0, Math.PI*2);
+  ctx.strokeStyle = "rgba(244,63,94,0.3)"; ctx.lineWidth = 2; ctx.stroke();
 
-  // ── 6. Cung quét Kepler 2 ──
-  if (chkSweep.checked) {
-    ctx.fillStyle = "rgba(251,191,36,0.12)";
-    ctx.beginPath();
-    ctx.moveTo(sunX, sunY);
+  // 6. Cung quét Kepler 2
+  if (showSweep()) {
+    ctx.fillStyle = "rgba(251,191,36,0.1)";
+    ctx.beginPath(); ctx.moveTo(sunX, sunY);
     for (let i = 0; i <= 24; i++) {
-      const sm  = (M_Mars - 0.25 + 0.25 * (i / 24) + Math.PI * 2) % (Math.PI * 2);
-      const pt  = orbitPos(sm, e_Mars, A_MARS, sunX, sunY, scale);
+      const sm = (M_Mars - 0.25 + 0.25*(i/24) + Math.PI*2) % (Math.PI*2);
+      const pt = orbitPos(sm, e_Mars, A_MARS, sunX, sunY, scale);
       ctx.lineTo(pt.x, pt.y);
     }
-    ctx.closePath();
-    ctx.fill();
-    // stroke viền cung
-    ctx.strokeStyle = "rgba(251,191,36,0.35)";
-    ctx.lineWidth   = 1;
-    ctx.stroke();
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "rgba(251,191,36,0.3)"; ctx.lineWidth = 1; ctx.stroke();
   }
 
-  // ── 7. Đường ngắm trail ──
-  if (chkSightline.checked && chkEarth.checked) {
+  // 7. Trail đường ngắm
+  if (showSightline() && showEarth()) {
     const len = sightlines.length;
     sightlines.forEach((l, idx) => {
-      const alpha = (idx / len) * 0.3;
-      ctx.beginPath();
-      ctx.moveTo(l.ex, l.ey);
-      ctx.lineTo(l.mx, l.my);
+      const alpha = (idx / len) * 0.28;
+      ctx.beginPath(); ctx.moveTo(l.ex, l.ey); ctx.lineTo(l.mx, l.my);
       ctx.strokeStyle = l.retro
-        ? `rgba(244,63,94,${(alpha * 1.6).toFixed(2)})`
+        ? `rgba(244,63,94,${(alpha*1.5).toFixed(2)})`
         : `rgba(148,163,184,${alpha.toFixed(2)})`;
-      ctx.lineWidth = l.retro ? 1.4 : 0.7;
-      ctx.stroke();
+      ctx.lineWidth = l.retro ? 1.3 : 0.7; ctx.stroke();
     });
-
-    // Đường ngắm hiện tại
     dashedLine(ctx, earth.x, earth.y, mars.x, mars.y,
       [5,4], isRetrograde ? "#fb7185" : "#38bdf8", 1.8);
   }
 
-  // ── 8. Đoạn MF₁ & MF₂ ──
-  if (chkFocalRays.checked) {
-    // MF₁
-    ctx.save();
-    ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth   = 2.2;
-    ctx.beginPath(); ctx.moveTo(sunX, sunY); ctx.lineTo(mars.x, mars.y); ctx.stroke();
-    ctx.restore();
-    const mid1X = (sunX + mars.x) / 2, mid1Y = (sunY + mars.y) / 2;
-    drawLabel(ctx, `MF₁ = ${d1_AU.toFixed(2)} AU`, mid1X - 28, mid1Y - 7, "#fbbf24", 11);
-
-    // MF₂
+  // 8. MF₁ & MF₂
+  if (showFocalRays()) {
+    ctx.save(); ctx.strokeStyle="#fbbf24"; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(sunX,sunY); ctx.lineTo(mars.x,mars.y); ctx.stroke(); ctx.restore();
+    drawLabel(ctx, `MF₁=${d1_AU.toFixed(2)}AU`, (sunX+mars.x)/2-24, (sunY+mars.y)/2-7, "#fbbf24", 11);
     dashedLine(ctx, f2X, f2Y, mars.x, mars.y, [5,4], "#94a3b8", 1.8);
-    const mid2X = (f2X + mars.x) / 2, mid2Y = (f2Y + mars.y) / 2;
-    drawLabel(ctx, `MF₂ = ${d2_AU.toFixed(2)} AU`, mid2X + 6, mid2Y - 7, "#94a3b8", 11);
+    drawLabel(ctx, `MF₂=${d2_AU.toFixed(2)}AU`, (f2X+mars.x)/2+5, (f2Y+mars.y)/2-7, "#94a3b8", 11);
   }
 
-  // ── 9. MẶT TRỜI ──
-  const sunGlow = ctx.createRadialGradient(sunX, sunY, 3, sunX, sunY, 36);
-  sunGlow.addColorStop(0,   "#fff7c0");
-  sunGlow.addColorStop(0.4, "#fbbf24");
-  sunGlow.addColorStop(1,   "transparent");
-  ctx.fillStyle = sunGlow;
-  ctx.beginPath(); ctx.arc(sunX, sunY, 36, 0, Math.PI * 2); ctx.fill();
+  // 9. Mặt Trời
+  const sg = ctx.createRadialGradient(sunX, sunY, 3, sunX, sunY, 36);
+  sg.addColorStop(0, "#fff7c0"); sg.addColorStop(0.4, "#fbbf24"); sg.addColorStop(1, "transparent");
+  ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sunX, sunY, 36, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#fffbeb"; ctx.beginPath(); ctx.arc(sunX, sunY, 12, 0, Math.PI*2); ctx.fill();
+  drawLabel(ctx, "Mặt Trời (F₁)", sunX-34, sunY+28, "#fef08a", 11);
 
-  ctx.fillStyle = "#fffbeb";
-  ctx.beginPath(); ctx.arc(sunX, sunY, 12, 0, Math.PI * 2); ctx.fill();
-  drawLabel(ctx, "Mặt Trời (F₁)", sunX - 34, sunY + 28, "#fef08a", 11);
-
-  // ── 10. TRÁI ĐẤT ──
-  if (chkEarth.checked) {
+  // 10. Trái Đất
+  if (showEarth()) {
     const eg = ctx.createRadialGradient(earth.x, earth.y, 3, earth.x, earth.y, 20);
-    eg.addColorStop(0, "rgba(56,189,248,0.55)");
-    eg.addColorStop(1, "transparent");
-    ctx.fillStyle = eg;
-    ctx.beginPath(); ctx.arc(earth.x, earth.y, 20, 0, Math.PI * 2); ctx.fill();
-
-    const eb = ctx.createRadialGradient(earth.x - 2, earth.y - 2, 1, earth.x, earth.y, 9);
-    eb.addColorStop(0,   "#bfdbfe");
-    eb.addColorStop(0.5, "#2563eb");
-    eb.addColorStop(1,   "#1e3a8a");
-    ctx.fillStyle = eb;
-    ctx.beginPath(); ctx.arc(earth.x, earth.y, 9, 0, Math.PI * 2); ctx.fill();
-
-    drawLabel(ctx, "Trái Đất", earth.x + 13, earth.y + 5, "#cbd5e1", 11);
+    eg.addColorStop(0, "rgba(56,189,248,0.5)"); eg.addColorStop(1, "transparent");
+    ctx.fillStyle = eg; ctx.beginPath(); ctx.arc(earth.x, earth.y, 20, 0, Math.PI*2); ctx.fill();
+    const eb = ctx.createRadialGradient(earth.x-2, earth.y-2, 1, earth.x, earth.y, 9);
+    eb.addColorStop(0,"#bfdbfe"); eb.addColorStop(0.5,"#2563eb"); eb.addColorStop(1,"#1e3a8a");
+    ctx.fillStyle = eb; ctx.beginPath(); ctx.arc(earth.x, earth.y, 9, 0, Math.PI*2); ctx.fill();
+    drawLabel(ctx, "Trái Đất", earth.x+13, earth.y+5, "#cbd5e1", 11);
   }
 
-  // ── 11. SAO HỎA ──
-  const marsR  = 13;
-  const glowR  = isDraggingMars ? 40 : (isOpposition ? 34 : 26);
-  const marsGC = isDraggingMars
-    ? "rgba(251,146,60,0.9)"
+  // 11. Sao Hỏa
+  const marsR = 13;
+  const glowR = isDraggingMars ? 40 : (isOpposition ? 34 : 26);
+  const marsGC = isDraggingMars ? "rgba(251,146,60,0.9)"
     : (isOpposition ? "rgba(244,63,94,0.8)" : "rgba(244,63,94,0.45)");
-
   const mg = ctx.createRadialGradient(mars.x, mars.y, 5, mars.x, mars.y, glowR);
-  mg.addColorStop(0, marsGC);
-  mg.addColorStop(1, "transparent");
-  ctx.fillStyle = mg;
-  ctx.beginPath(); ctx.arc(mars.x, mars.y, glowR, 0, Math.PI * 2); ctx.fill();
-
-  // Vòng kéo thả
+  mg.addColorStop(0, marsGC); mg.addColorStop(1, "transparent");
+  ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(mars.x, mars.y, glowR, 0, Math.PI*2); ctx.fill();
   if (isDraggingMars) {
-    ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.75)";
-    ctx.lineWidth   = 1.5;
-    ctx.setLineDash([3,3]);
-    ctx.beginPath(); ctx.arc(mars.x, mars.y, marsR + 8, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore();
+    ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.75)"; ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.arc(mars.x, mars.y, marsR+8, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
   }
-
-  // Thân Sao Hỏa
-  const mb = ctx.createRadialGradient(mars.x - 3, mars.y - 3, 2, mars.x, mars.y, marsR);
-  mb.addColorStop(0,   "#fda4af");
-  mb.addColorStop(0.3, "#f43f5e");
-  mb.addColorStop(0.7, "#be123c");
-  mb.addColorStop(1,   "#4c0519");
-  ctx.fillStyle = mb;
-  ctx.beginPath(); ctx.arc(mars.x, mars.y, marsR, 0, Math.PI * 2); ctx.fill();
-
-  // Chỏm băng cực
+  const mb = ctx.createRadialGradient(mars.x-3, mars.y-3, 2, mars.x, mars.y, marsR);
+  mb.addColorStop(0,"#fda4af"); mb.addColorStop(0.3,"#f43f5e");
+  mb.addColorStop(0.7,"#be123c"); mb.addColorStop(1,"#4c0519");
+  ctx.fillStyle = mb; ctx.beginPath(); ctx.arc(mars.x, mars.y, marsR, 0, Math.PI*2); ctx.fill();
   ctx.fillStyle = "rgba(255,255,255,0.88)";
-  ctx.beginPath(); ctx.arc(mars.x - 2, mars.y - marsR + 3.5, 3.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(mars.x-2, mars.y-marsR+3.5, 3.5, 0, Math.PI*2); ctx.fill();
+  drawLabel(ctx, isDraggingMars ? "Sao Hỏa (M) 🖐" : "Sao Hỏa (M)",
+    mars.x+18, mars.y+5, "#fbcfe8", 12);
 
-  drawLabel(ctx,
-    isDraggingMars ? "Sao Hỏa (M) 🖐" : "Sao Hỏa (M)",
-    mars.x + 18, mars.y + 5, "#fbcfe8", 12);
+  // 12. Update UI
+  const statusText = isDraggingMars ? "🖐️ Đang tùy chỉnh"
+    : isRetrograde ? "⚡ Nghịch Hành"
+    : isOpposition ? "🌟 Trực Đối"
+    : "✅ Thuận hành";
+  const statusClass = isDraggingMars ? "status-tag tag-drag"
+    : isRetrograde ? "status-tag tag-retro"
+    : isOpposition ? "status-tag tag-opp"
+    : "status-tag tag-pro";
 
-  // ── 12. Cập nhật UI ──
-  valMF1.textContent     = `${d1_AU.toFixed(3)} AU`;
-  valMF2.textContent     = `${d2_AU.toFixed(3)} AU`;
-  valTotal2a.textContent = `${sum2a.toFixed(3)} AU (= 2a)`;
+  // Desktop
+  if (valMF1)      valMF1.textContent     = `${d1_AU.toFixed(3)} AU`;
+  if (valMF2)      valMF2.textContent     = `${d2_AU.toFixed(3)} AU`;
+  if (valTotal2a)  valTotal2a.textContent = `${sum2a.toFixed(3)} AU (= 2a)`;
+  if (valDist)     valDist.textContent      = d1_AU.toFixed(3);
+  if (valVMars)    valVMars.textContent     = vMars.toFixed(2);
+  if (valDistEarth) valDistEarth.textContent = dEM_AU.toFixed(3);
+  if (badgeStatus) { badgeStatus.textContent = statusText; badgeStatus.className = statusClass; }
 
-  valDist.textContent      = d1_AU.toFixed(3);
-  valVMars.textContent     = vMars.toFixed(2);
-  valDistEarth.textContent = dEM_AU.toFixed(3);
-  valAngle.textContent     = ((curAngle * 180 / Math.PI + 360) % 360).toFixed(1);
+  // Mobile (mini bar)
+  if (mValDist) mValDist.textContent = d1_AU.toFixed(3);
+  if (mValV)    mValV.textContent    = vMars.toFixed(2);
+  if (mBadgeStatus) { mBadgeStatus.textContent = statusText; mBadgeStatus.className = "status-tag " + statusClass.split(" ")[1]; }
 
-  if (isDraggingMars) {
-    badgeStatus.textContent = "🖐️ Tùy chỉnh vị trí thủ công";
-    badgeStatus.className   = "status-tag tag-drag";
-  } else if (isRetrograde) {
-    badgeStatus.textContent = "⚡ Nghịch Hành (Retrograde)";
-    badgeStatus.className   = "status-tag tag-retro";
-  } else if (isOpposition) {
-    badgeStatus.textContent = "🌟 Trực Đối (Opposition)";
-    badgeStatus.className   = "status-tag tag-opp";
-  } else {
-    badgeStatus.textContent = "✅ Thuận hành (Prograde)";
-    badgeStatus.className   = "status-tag tag-pro";
-  }
+  // Mobile (sheet)
+  if (mValMF1)         mValMF1.textContent      = `${d1_AU.toFixed(3)} AU`;
+  if (mValMF2)         mValMF2.textContent      = `${d2_AU.toFixed(3)} AU`;
+  if (mValTotal2a)     mValTotal2a.textContent  = `${sum2a.toFixed(3)} AU (= 2a)`;
+  if (mValDist2)       mValDist2.textContent    = d1_AU.toFixed(3);
+  if (mValVMars2)      mValVMars2.textContent   = vMars.toFixed(2);
+  if (mValDistEarth2)  mValDistEarth2.textContent = dEM_AU.toFixed(3);
+  if (mBadgeStatus2)   { mBadgeStatus2.textContent = statusText; mBadgeStatus2.className = statusClass; }
 
-  drawSky();
+  drawSky(skyCtx, skyCanvas);
+  if (isMobile()) drawSky(mSkyCtx, mSkyCanvas);
+
   requestAnimationFrame(render);
 }
 
-// ── SKY VIEW ─────────────────────────────────────────────────────────────────
-function drawSky() {
-  const w = skyCanvas.width, h = skyCanvas.height;
-  skyCtx.clearRect(0, 0, w, h);
-
-  // Nền gradient
-  const bg = skyCtx.createLinearGradient(0, 0, 0, h);
-  bg.addColorStop(0, "#020617");
-  bg.addColorStop(1, "#0a0f22");
-  skyCtx.fillStyle = bg;
-  skyCtx.fillRect(0, 0, w, h);
-
-  // Đường giữa (Xích đạo biểu kiến)
-  skyCtx.strokeStyle = "rgba(255,255,255,0.07)";
-  skyCtx.lineWidth   = 1;
-  skyCtx.beginPath();
-  skyCtx.moveTo(0, h / 2); skyCtx.lineTo(w, h / 2);
-  skyCtx.stroke();
+// ── SKY ──────────────────────────────────────────────────────────────────────
+function drawSky(c, cv) {
+  if (!c || !cv) return;
+  const w = cv.width, h = cv.height;
+  c.clearRect(0, 0, w, h);
+  const bg = c.createLinearGradient(0,0,0,h);
+  bg.addColorStop(0, "#020617"); bg.addColorStop(1, "#0a0f22");
+  c.fillStyle = bg; c.fillRect(0, 0, w, h);
+  c.strokeStyle = "rgba(255,255,255,0.06)"; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(0,h/2); c.lineTo(w,h/2); c.stroke();
 
   if (skyTrail.length < 2) return;
-
-  skyCtx.lineWidth = 2;
+  c.lineWidth = 2;
   for (let i = 1; i < skyTrail.length; i++) {
-    const p1 = skyTrail[i - 1];
-    const p2 = skyTrail[i];
-    const x1 = w / 2 + p1.angle * 38;
-    const y1 = h / 2 + Math.sin(p1.angle * 2) * 22;
-    const x2 = w / 2 + p2.angle * 38;
-    const y2 = h / 2 + Math.sin(p2.angle * 2) * 22;
-
-    const alpha = 0.3 + 0.7 * (i / skyTrail.length);
-    skyCtx.strokeStyle = p2.retro
+    const p1 = skyTrail[i-1], p2 = skyTrail[i];
+    const x1 = w/2 + p1.angle*38, y1 = h/2 + Math.sin(p1.angle*2)*22;
+    const x2 = w/2 + p2.angle*38, y2 = h/2 + Math.sin(p2.angle*2)*22;
+    const alpha = 0.25 + 0.75*(i/skyTrail.length);
+    c.strokeStyle = p2.retro
       ? `rgba(244,63,94,${alpha.toFixed(2)})`
       : `rgba(56,189,248,${alpha.toFixed(2)})`;
-    skyCtx.beginPath();
-    skyCtx.moveTo(x1, y1); skyCtx.lineTo(x2, y2);
-    skyCtx.stroke();
+    c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke();
   }
-
-  // Điểm Sao Hỏa hiện tại
-  const last = skyTrail[skyTrail.length - 1];
-  const lx   = w / 2 + last.angle * 38;
-  const ly   = h / 2 + Math.sin(last.angle * 2) * 22;
-  // Hào quang
-  const lg = skyCtx.createRadialGradient(lx, ly, 2, lx, ly, 10);
-  lg.addColorStop(0, "rgba(244,63,94,0.9)");
-  lg.addColorStop(1, "transparent");
-  skyCtx.fillStyle = lg;
-  skyCtx.beginPath(); skyCtx.arc(lx, ly, 10, 0, Math.PI * 2); skyCtx.fill();
-  // Nhân
-  skyCtx.fillStyle = "#f43f5e";
-  skyCtx.beginPath(); skyCtx.arc(lx, ly, 4, 0, Math.PI * 2); skyCtx.fill();
+  const last = skyTrail[skyTrail.length-1];
+  const lx = w/2+last.angle*38, ly = h/2+Math.sin(last.angle*2)*22;
+  const lg = c.createRadialGradient(lx,ly,2,lx,ly,10);
+  lg.addColorStop(0,"rgba(244,63,94,0.9)"); lg.addColorStop(1,"transparent");
+  c.fillStyle = lg; c.beginPath(); c.arc(lx,ly,10,0,Math.PI*2); c.fill();
+  c.fillStyle = "#f43f5e"; c.beginPath(); c.arc(lx,ly,4,0,Math.PI*2); c.fill();
 }
 
-// ── DRAG HANDLING ─────────────────────────────────────────────────────────────
+// ── DRAG ─────────────────────────────────────────────────────────────────────
 function getCanvasPos(e) {
   const rect = canvas.getBoundingClientRect();
   const src  = e.touches ? e.touches[0] : e;
@@ -1149,135 +1316,196 @@ function getCanvasPos(e) {
 }
 
 function projectToOrbit(px, py) {
-  const scale  = Math.min(canvas.width, canvas.height) / 4.3;
-  const cx     = canvas.width / 2, cy = canvas.height / 2;
-  const aM     = A_MARS * scale;
-  const bM     = aM * Math.sqrt(1 - e_Mars * e_Mars);
-  const cM     = aM * e_Mars;
-  const omX    = cx + cM;
-  const dx     = px - omX, dy = py - cy;
-  const E      = Math.atan2(-dy / bM, -dx / aM);
-  const posE   = (E + Math.PI * 2) % (Math.PI * 2);
-  M_Mars       = (posE - e_Mars * Math.sin(posE) + Math.PI * 2) % (Math.PI * 2);
+  const scale = Math.min(canvas.width, canvas.height) / 4.3;
+  const cx    = canvas.width/2, cy = canvas.height/2;
+  const aM    = A_MARS * scale, bM = aM * Math.sqrt(1-e_Mars**2), cM = aM * e_Mars;
+  const omX   = cx + cM;
+  const dx    = px - omX, dy = py - cy;
+  const E     = Math.atan2(-dy/bM, -dx/aM);
+  const posE  = (E + Math.PI*2) % (Math.PI*2);
+  M_Mars      = (posE - e_Mars*Math.sin(posE) + Math.PI*2) % (Math.PI*2);
 }
 
 canvas.addEventListener("mousedown", e => {
-  const pos  = getCanvasPos(e);
-  const dist = Math.hypot(pos.x - currentMarsPos.x, pos.y - currentMarsPos.y);
-  if (dist <= MARS_HIT_R) {
-    isDraggingMars = true;
-    canvas.style.cursor = "grabbing";
+  const pos = getCanvasPos(e);
+  if (Math.hypot(pos.x-currentMarsPos.x, pos.y-currentMarsPos.y) <= MARS_HIT_R) {
+    isDraggingMars = true; canvas.style.cursor = "grabbing";
     projectToOrbit(pos.x, pos.y);
   }
 });
 window.addEventListener("mousemove", e => {
   const pos = getCanvasPos(e);
-  if (isDraggingMars) {
-    projectToOrbit(pos.x, pos.y);
-  } else {
-    const d = Math.hypot(pos.x - currentMarsPos.x, pos.y - currentMarsPos.y);
+  if (isDraggingMars) { projectToOrbit(pos.x, pos.y); }
+  else {
+    const d = Math.hypot(pos.x-currentMarsPos.x, pos.y-currentMarsPos.y);
     canvas.style.cursor = d <= MARS_HIT_R ? "grab" : "default";
   }
 });
-window.addEventListener("mouseup", () => {
-  if (isDraggingMars) { isDraggingMars = false; canvas.style.cursor = "default"; }
-});
+window.addEventListener("mouseup", () => { if(isDraggingMars){isDraggingMars=false;canvas.style.cursor="default";} });
 
 canvas.addEventListener("touchstart", e => {
-  const pos  = getCanvasPos(e);
-  const dist = Math.hypot(pos.x - currentMarsPos.x, pos.y - currentMarsPos.y);
-  if (dist <= MARS_HIT_R) {
-    isDraggingMars = true;
-    projectToOrbit(pos.x, pos.y);
-    e.preventDefault();
+  const pos = getCanvasPos(e);
+  if (Math.hypot(pos.x-currentMarsPos.x, pos.y-currentMarsPos.y) <= MARS_HIT_R) {
+    isDraggingMars = true; projectToOrbit(pos.x, pos.y); e.preventDefault();
   }
 }, { passive: false });
-
 window.addEventListener("touchmove", e => {
-  if (isDraggingMars) {
-    projectToOrbit(...Object.values(getCanvasPos(e)));
-    e.preventDefault();
-  }
+  if (isDraggingMars) { projectToOrbit(...Object.values(getCanvasPos(e))); e.preventDefault(); }
 }, { passive: false });
-
 window.addEventListener("touchend", () => { isDraggingMars = false; });
 
-// ── CONTROLS ──────────────────────────────────────────────────────────────────
+// ── DESKTOP CONTROLS ─────────────────────────────────────────────────────────
 speedSlider.addEventListener("input", e => {
   timeScale = parseFloat(e.target.value);
   speedDisplay.textContent = timeScale.toFixed(1);
+  mSpeedSlider.value = timeScale;
+  mSpeedDisplay.textContent = timeScale.toFixed(1);
+  mSpeedChip.textContent = timeScale.toFixed(1) + "×";
 });
-
 eccSlider.addEventListener("input", e => {
   e_Mars = parseFloat(e.target.value);
   eccDisplay.textContent = e_Mars.toFixed(2);
-  sightlines.length = 0;
-  skyTrail.length   = 0;
-  prevAngle         = null; // reset retrograde detection
+  mEccSlider.value = e_Mars;
+  mEccDisplay.textContent = e_Mars.toFixed(2);
+  sightlines.length = skyTrail.length = 0; prevAngle = null;
+});
+function setPause(state) {
+  isRunning = state;
+  const t = isRunning ? "⏸ Tạm dừng" : "▶ Tiếp tục";
+  const c = isRunning ? "ctrl-btn btn-primary" : "ctrl-btn";
+  btnPause.textContent  = t; btnPause.className  = c;
+  mBtnPause2.textContent = t; mBtnPause2.className = c;
+  mBtnPause.textContent = isRunning ? "⏸" : "▶";
+  mBtnPause.className   = isRunning ? "mini-btn primary" : "mini-btn";
+}
+btnPause.addEventListener("click",   () => setPause(!isRunning));
+mBtnPause.addEventListener("click",  () => setPause(!isRunning));
+mBtnPause2.addEventListener("click", () => setPause(!isRunning));
+function doReset() {
+  M_Earth = 0; M_Mars = Math.PI*0.25;
+  sightlines.length = skyTrail.length = 0; prevAngle = null;
+}
+btnReset.addEventListener("click",  doReset);
+mBtnReset.addEventListener("click", doReset);
+mBtnReset2.addEventListener("click",doReset);
+
+// ── MOBILE CONTROLS ──────────────────────────────────────────────────────────
+mSpeedSlider.addEventListener("input", e => {
+  timeScale = parseFloat(e.target.value);
+  mSpeedDisplay.textContent = timeScale.toFixed(1);
+  mSpeedChip.textContent    = timeScale.toFixed(1) + "×";
+  speedSlider.value         = timeScale;
+  speedDisplay.textContent  = timeScale.toFixed(1);
+});
+mEccSlider.addEventListener("input", e => {
+  e_Mars = parseFloat(e.target.value);
+  mEccDisplay.textContent  = e_Mars.toFixed(2);
+  eccSlider.value          = e_Mars;
+  eccDisplay.textContent   = e_Mars.toFixed(2);
+  sightlines.length = skyTrail.length = 0; prevAngle = null;
 });
 
-btnPause.addEventListener("click", () => {
-  isRunning = !isRunning;
-  btnPause.textContent = isRunning ? "⏸ Tạm dừng" : "▶ Tiếp tục";
-  btnPause.className   = isRunning ? "ctrl-btn btn-primary" : "ctrl-btn";
+// ── DESKTOP TABS ──────────────────────────────────────────────────────────────
+function deskTab(activeBtn, activePanel) {
+  [btnTabElip,btnTabDesc,btnTabKepler].forEach(b => b.className="tab-btn");
+  [panelElip,panelDesc,panelKepler].forEach(p => p.style.display="none");
+  activeBtn.className  = "tab-btn active" + (activeBtn===btnTabElip?" elip-mode":"");
+  activePanel.style.display = "block";
+}
+btnTabElip.addEventListener("click",   () => deskTab(btnTabElip,   panelElip));
+btnTabDesc.addEventListener("click",   () => deskTab(btnTabDesc,   panelDesc));
+btnTabKepler.addEventListener("click", () => deskTab(btnTabKepler, panelKepler));
+
+// ── SHEET TABS (trong sheet Info) ────────────────────────────────────────────
+document.querySelectorAll(".sheet-tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const targetId = btn.getAttribute("data-stab");
+    const parent   = btn.closest(".sheet-body");
+    parent.querySelectorAll(".sheet-tab-btn").forEach(b => b.className="sheet-tab-btn");
+    btn.className = "sheet-tab-btn active" + (targetId==="stElip"?" elip-mode":"");
+    parent.querySelectorAll("[id^='st']").forEach(p => p.style.display="none");
+    document.getElementById(targetId).style.display = "block";
+  });
 });
 
-btnReset.addEventListener("click", () => {
-  M_Earth = 0;
-  M_Mars  = Math.PI * 0.25;
-  sightlines.length = 0;
-  skyTrail.length   = 0;
-  prevAngle         = null;
+// ── BOTTOM SHEET SYSTEM ────────────────────────────────────────────────────
+const overlay     = document.getElementById("sheetOverlay");
+let currentSheet  = null;
+
+function openSheet(sheetId) {
+  if (currentSheet) closeSheet(false);
+  const sheet = document.getElementById(sheetId);
+  if (!sheet) return;
+  overlay.style.display = "block";
+  sheet.style.display   = "block";
+  requestAnimationFrame(() => {
+    overlay.classList.add("open");
+    sheet.classList.add("open");
+  });
+  currentSheet = sheet;
+
+  // Cập nhật FAB active
+  document.querySelectorAll(".fab-btn").forEach(b => {
+    b.classList.toggle("active", b.getAttribute("data-sheet") === sheetId);
+  });
+}
+
+function closeSheet(resetFab = true) {
+  if (!currentSheet) return;
+  overlay.classList.remove("open");
+  currentSheet.classList.remove("open");
+  const s = currentSheet;
+  setTimeout(() => {
+    s.style.display  = "none";
+    overlay.style.display = "none";
+  }, 350);
+  currentSheet = null;
+  if (resetFab) document.querySelectorAll(".fab-btn").forEach(b => b.classList.remove("active"));
+}
+
+overlay.addEventListener("click", closeSheet);
+
+document.querySelectorAll("[data-close]").forEach(btn => {
+  btn.addEventListener("click", closeSheet);
 });
 
-// ── TOOLTIP khi hover lên Mặt Trời & Sao Hỏa ─────────────────────────────────
-canvas.addEventListener("mousemove", e => {
-  const pos = getCanvasPos(e);
-  const cx  = canvas.width / 2, cy = canvas.height / 2;
-  const rect = canvas.getBoundingClientRect();
-  const sx   = e.clientX - rect.left + 12;
-  const sy   = e.clientY - rect.top  - 10;
-
-  const nearSun  = Math.hypot(pos.x - cx, pos.y - cy) < 16;
-  const nearMars = Math.hypot(pos.x - currentMarsPos.x, pos.y - currentMarsPos.y) < 20;
-
-  if (nearSun) {
-    tooltip.style.display = "block";
-    tooltip.style.left    = sx + "px";
-    tooltip.style.top     = sy + "px";
-    tooltip.innerHTML     = "<strong>☀ Mặt Trời (F₁)</strong><br>Tiêu điểm chứa của Elip<br>GM = 1.327×10¹¹ km³/s²";
-  } else if (nearMars) {
-    tooltip.style.display = "block";
-    tooltip.style.left    = sx + "px";
-    tooltip.style.top     = sy + "px";
-    const rAU = currentMarsPos ? (Math.hypot(currentMarsPos.x - cx, currentMarsPos.y - cy)
-      / (Math.min(canvas.width, canvas.height) / 4.3)).toFixed(3) : "—";
-    tooltip.innerHTML = `<strong>🔴 Sao Hỏa (M)</strong><br>Kéo để di chuyển trên quỹ đạo<br>r = ${rAU} AU`;
-  } else {
-    tooltip.style.display = "none";
-  }
+// FAB buttons
+document.querySelectorAll(".fab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const sheetId = btn.getAttribute("data-sheet");
+    if (currentSheet && currentSheet.id === sheetId) {
+      closeSheet();
+    } else {
+      openSheet(sheetId);
+    }
+  });
 });
-canvas.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
 
-// ── KEYBOARD shortcuts ────────────────────────────────────────────────────────
+// Swipe down để đóng sheet
+let touchStartY = 0;
+document.querySelectorAll(".bottom-sheet").forEach(sheet => {
+  sheet.addEventListener("touchstart", e => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  sheet.addEventListener("touchend", e => {
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (dy > 80) closeSheet(); // vuốt xuống > 80px → đóng
+  }, { passive: true });
+});
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────────
 window.addEventListener("keydown", e => {
   if (e.target.tagName === "INPUT") return;
-  switch (e.key) {
-    case " ":
-      e.preventDefault();
-      btnPause.click();
-      break;
-    case "r": case "R":
-      btnReset.click();
-      break;
-    case "ArrowUp":
-      speedSlider.value = Math.min(5, +speedSlider.value + 0.2).toFixed(1);
-      speedSlider.dispatchEvent(new Event("input"));
-      break;
-    case "ArrowDown":
-      speedSlider.value = Math.max(0.1, +speedSlider.value - 0.2).toFixed(1);
-      speedSlider.dispatchEvent(new Event("input"));
-      break;
+  if (e.key === " ") { e.preventDefault(); setPause(!isRunning); }
+  if (e.key === "r" || e.key === "R") doReset();
+  if (e.key === "Escape") closeSheet();
+  if (e.key === "ArrowUp") {
+    speedSlider.value = Math.min(5, +speedSlider.value + 0.2).toFixed(1);
+    speedSlider.dispatchEvent(new Event("input"));
+  }
+  if (e.key === "ArrowDown") {
+    speedSlider.value = Math.max(0.1, +speedSlider.value - 0.2).toFixed(1);
+    speedSlider.dispatchEvent(new Event("input"));
   }
 });
 
